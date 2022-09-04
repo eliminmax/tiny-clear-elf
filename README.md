@@ -1,4 +1,4 @@
-# Tiny Clear
+# Tiny Clear ELF
 The goal of this project is to create the smallest possible ELF executable that clears the screen, for all architectures that are officially supported by Debian GNU/Linux Bullseye. Why? Originally it was because I felt like it. Later on, it occured to me that I could use this as a college Capstone project.
 
 The way they work is simple - they print out the following hexadecimal data to stdout: `1b 5b 48 1b 5b 4a 1b 5b 33 4a`.
