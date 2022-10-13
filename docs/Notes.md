@@ -1,3 +1,5 @@
+This document is primarily written for someone with similar background knowledge to me.
+
 # ELF format
 
 This section was made with reference to `elf.h` from the GNU C Library, and `ELF(5)` from the Linux man-pages project.
@@ -179,7 +181,19 @@ Let's split that up, section by section:
 
 ## Program Header
 
-The Program header is a struct that differs between 32-bit and 64-bit
+The Program header is a struct wuth 8 values within it, defining the location and properties of a segment within the program. The both the order and the size of the Program Header fields depend on whether the ELF file is 32-bit or 64-bit.
+
+### Elf32_Phdr
+data       | bytes | type       | description
+-----------|-------|------------|----------------
+`p_type`   | 4     | Elf32_Word | Segment type
+`p_offset` | 4     | Elf32_Off  | Segment file offset
+`p_vaddr`  | 4     | Elf32_Addr | Segment virtual address
+`p_paddr`  | 4     | Elf32_Addr | Segment physical address
+`p_filesz` | 4     | Elf32_Word | Segment size in file
+`p_memsz`  | 4     | Elf32_Word | Segment size in memory
+`p_flags`  | 4     | Elf32_Word | Segment flags
+`p_align`  | 4     | Elf32_Word | Segment alignment
 
 ### Elf64_Phdr
 data       | bytes | type        | description
@@ -193,9 +207,84 @@ data       | bytes | type        | description
 `p_memsz`  | 8     | Elf64_Xword | Segment size in memory
 `p_align`  | 8     | Elf64_Xword | Segment alignment
 
+### Field values
 
-## Real-World Example (Again)
+#### `p_type`
 
+Valid field values are listed in `elf.h`. The only one of interest to this project is `PT_LOAD` (1), which indicates that this is a loadable program segment.
+
+#### `p_flags`
+
+This is similar to Unix permissions. If the segment is readable, add 4, if it's writable, add 2, and if it's executable, add 1. For a readable, executable segment, set it to 5.
+
+#### `p_offset`
+
+Offset from the begining of the file to the segment described
+
+#### `p_vaddr`
+
+Virtual address of the first byte of the segment in memory
+
+#### `p_paddr`
+
+The physical address of the segment - not used on all systems. On BSD, it must be 0.
+
+#### `p_memsz`
+
+Size of the segment in memory
+
+#### `p_align`
+
+segments are to be aligned to this value. If set to 0 or 1, alignment does not matter. If not set to 0, must be a positive power of 2, and
+`p_vaddr` should be equal to `p_offset` modulo `p_align`.
+
+# Assembly and Linux ABI
+
+A full list of syscalls can be found in the `SYSCALLS(2)` man page from the Linux man-pages project. The only two directly needed in this project are `write` and `exit`.
+
+## x86_64
+I figured that I'd start with `x86_64` assembly, as it's the native format for the system I'm working on.
+
+### registers
+
+<details>
+<summary>How this table was made</summary>
+<p>Using the first table on the <a href="https://wiki.osdev.org/CPU_Registers_x86-64">OSDev.org wiki page on x86_64 CPU Registers</a>, as a base, I used the Netwide Assembler to get their values</p>
+</details>
+
+64-bit name | 64-bit value | 32-bit name | 32-bit value | 16-bit name | 16-bit value | 8 high bits of lower 16 bits name | 8 high bits of lower 16 bits value | 8-bit name | 8-bit value | Description
+------------|--------------|-------------|--------------|-------------|--------------|-----------------------------------|------------------------------------|------------|-------------|-------------------------------------------
+RAX         | `48 b8`      | EAX         | `b8`         | AX          | `66 b8`      | AH                                | `b4`                               | AL         | `b0`        | Accumulator
+RBX         | `48 bb`      | EBX         | `bb`         | BX          | `66 bb`      | BH                                | `b7`                               | BL         | `b3`        | Base
+RCX         | `48 b9`      | ECX         | `b9`         | CX          | `66 b9`      | CH                                | `b5`                               | CL         | `b1`        | Counter
+RDX         | `48 ba`      | EDX         | `ba`         | DX          | `66 ba`      | DH                                | `b6`                               | DL         | `b2`        | Data (commonly extends the A register)
+RSI         | `48 be`      | ESI         | `be`         | SI          | `66 be`      |                                   |                                    | SIL        | `40 b6`     | Source index for string operations
+RDI         | `48 bf`      | EDI         | `bf`         | DI          | `66 bf`      |                                   |                                    | DIL        | `40 b7`     | Destination index for string operations
+RSP         | `48 bc`      | ESP         | `bc`         | SP          | `66 bc`      |                                   |                                    | SPL        | `40 b4`     | Stack Pointer
+RBP         | `48 bd`      | EBP         | `bd`         | BP          | `66 bd`      |                                   |                                    | BPL        | `40 b5`     | Base Pointer (meant for stack frames)
+R8          | `49 b8`      | R8D         | `41 b8`      | R8W         | `66 41 b8`   |                                   |                                    | R8B        | `41 b0`     | General purpose
+R9          | `49 b9`      | R9D         | `41 b9`      | R9W         | `66 41 b9`   |                                   |                                    | R9B        | `41 b1`     | General purpose
+R10         | `49 ba`      | R10D        | `41 ba`      | R10W        | `66 41 ba`   |                                   |                                    | R10B       | `41 b2`     | General purpose
+R11         | `49 bb`      | R11D        | `41 bb`      | R11W        | `66 41 bb`   |                                   |                                    | R11B       | `41 b3`     | General purpose
+R12         | `49 bc`      | R12D        | `41 bc`      | R12W        | `66 41 bc`   |                                   |                                    | R12B       | `41 b4`     | General purpose
+R13         | `49 bd`      | R13D        | `41 bd`      | R13W        | `66 41 bd`   |                                   |                                    | R13B       | `41 b5`     | General purpose
+R14         | `49 be`      | R14D        | `41 be`      | R14W        | `66 41 be`   |                                   |                                    | R14B       | `41 b6`     | General purpose
+R15         | `49 bf`      | R15D        | `41 bf`      | R15W        | `66 41 bf`   |                                   |                                    | R15B       | `41 b7`     | General purpose
+
+When setting 64-bit registers' 32-bit equivalents, the higher 32-bits are zeroed out automatically. Thus, `b8 01 00 00 00` has the same effect as `48 b8 01 00 00 00 00 00 00 00`, in half the bytes.
+*(Incidentally, this caused me some trouble creating the above table, as the Netwide Assembler is smart enough to assemble* `mov rax,0` *as* `b8 00 00 00 00`, *and as I couldn't find the hex identifiers of the registers online,
+I was using it to build the above table. Thanks to [This StackOverflow answer](https://stackoverflow.com/a/26505463) for the fix for that, by the way).*
+
+### Linux ABI
+
+The `syscall` instruction is `0f 05`, and it reads the system call number from RAX, writes its return values to RAX and RDX. It reads arguments from registers RDI, RSI, RDX, R10, R8, and R9.
+
+* The `write` syscall is given the number `1`. It reads the file descriptor to write to from RDI, the memory address of the message to print from RSI, and the size of the message from RDX.
+* The `exit` syscall is given the number `60`. It reads the exit code from RDI.
+
+On my primary system, running Pop!_OS 22.04, the full list of syscalls' numeric codes can be found in the file **/usr/include/x86_64-linux-gnu/asm/unistd_64.h** provided by the `linux-libc-dev:amd64` package
+
+# Bringing it all together - Real-World Example
 This the xxd-formatted hexdump of a simple 169-byte amd64 Hello world ELF binary I found on [StackOverflow](https://stackoverflow.com/a/72943538).
 I intend to go over every byte within it and explain its purpose, as a way to test and/or further my understanding of the ELF format.
 
@@ -354,12 +443,14 @@ The `e_ident` bytes are the same as the previously-analyzed busybox executable, 
 │00000070│ 02 00 00 00 00 00 00 00 ┊                         │
 └────────┴─────────────────────────┴─────────────────────────┘
 ```
+
 #### `p_type`
 ```
 ┌─────────┬─────────────┐
 │ 40 - 43 │ 01 00 00 00 │
 └─────────┴─────────────┘
 ```
+* This is a loadable segment
 
 #### `p_flags`
 ```
@@ -367,6 +458,7 @@ The `e_ident` bytes are the same as the previously-analyzed busybox executable, 
 │ 44 - 47 │ 05 00 00 00 │
 └─────────┴─────────────┘
 ```
+* This segment is readable and executable
 
 #### `p_offset`
 ```
@@ -374,6 +466,7 @@ The `e_ident` bytes are the same as the previously-analyzed busybox executable, 
 │ 48 - 4f │ 00 00 00 00 00 00 00 00 │
 └─────────┴─────────────────────────┘
 ```
+* This segment begings at byte 0 of the file
 
 #### `p_vaddr`
 ```
@@ -381,6 +474,7 @@ The `e_ident` bytes are the same as the previously-analyzed busybox executable, 
 │ 50 - 57 │ 00 00 01 00 00 00 00 00 │
 └─────────┴─────────────────────────┘
 ```
+The address of the first byte of virtual memory to allocate
 
 #### `p_paddr`
 ```
@@ -406,7 +500,7 @@ The `e_ident` bytes are the same as the previously-analyzed busybox executable, 
 #### `p_align`
 ```
 ┌─────────┬─────────────────────────┐
-│ 70 - 7f │ 02 00 00 00 00 00 00 00 │
+│ 70 - 77 │ 02 00 00 00 00 00 00 00 │
 └─────────┴─────────────────────────┘
 ```
 
@@ -421,14 +515,73 @@ The `e_ident` bytes are the same as the previously-analyzed busybox executable, 
 └────────┴─────────────────────────┴─────────────────────────┘
 ```
 
-# Assembly and Linux ABI
+#### First Syscall
+```
+┌─────────┬────────────────┐
+│ 78 - 7c │ b8 01 00 00 00 │
+└─────────┴────────────────┘
+┌─────────┬────────────────┐
+│ 7d - 81 │ bf 01 00 00 00 │
+└─────────┴────────────────┘
+┌─────────┬────────────────┐
+│ 82 - 86 │ be 9a 00 01 00 │
+└─────────┴────────────────┘
+┌─────────┬────────────────┐
+│ 87 - 8b │ ba 0f 00 00 00 │
+└─────────┴────────────────┘
+```
+* `b8`, `bf`, `be`, and `ba` are the identifies of specific 32-bit registers, and the next 4 bytes are the values to set it to.
+  * `b8` is EAX, and it is being set to 1.
+  * `bf` is EDI, and it is being set to 1.
+  * `be` is ESI, and it is being set to 65690.
+  * `ba` is EDX, and it is being set to 15.
 
-## x86_64
-I figured that I'd start with `x86_64` assembly, as it's the native format for the system I'm working on.
+```
+┌─────────┬───────┐
+│ 8c - 8d │ 0f 05 │
+└─────────┴───────┘
+```
+* This is the Linux amd64 `syscall` instruction. It determines its behavior by reading RAX.
+  * RAX is set to 1 (because EAX was set to 1, and EAX is the 32-bit mode version of RAX). This is the `write` syscall.
+    * `write` gets its the file descriptor to write to from RDI, and file descriptor 1 is always the standard output (STDOUT)
+    * `write` gets the memory address of the message to write from RSI. In this case, it's 65690. The ELF header's `e_entry` value is 65656. This means that the message to print starts 34 bytes after the entry point
+    * `write` gets the length of the data to print from RDX, which is set to 15.
 
-The `syscall` instruction is `0f 05`, and it reads the system call number from the `rax`, writes its return values to `rax` and `rdx`. It reads arguments from registers `rdi`, `rsi`, `rdx`, `r10`, `r8`, and `r9`.
+    * This means that it will write 15 bytes to STDOUT, which it will get starting 34 bytes after the entry point - starting at memory address 65690, which is at address `0x9a` within the file
 
-* The `write` instruction is given the number `1`. It reads the file descriptor to write to from `rdi`, the message to print from `rsi`, and the size of the message from `rdx`.
-* The `exit` syscall is given the number `60`. It reads the exit code from `rdi`.
+skipping ahead a bit, to `0x9a` in the file, we get the message to print:
+```
+┌─────────┬──────────────────────────────────────────────┐
+│ 9a - a8 │ 48 65 6c 6c 6f 2c 20 57 6f 72 6c 64 21 0a 00 │
+└─────────┴──────────────────────────────────────────────┘
+```
+* These bytes consist of the 8-bit ASCII code of the classic text "Hello, World!", followed by a newline character, and a NULL byte.
+*(As an aside, this last byte seems unneeded to me - removing it and adjusting the message length specified by RDX to 14 works fine, and running the original adds a NULL byte to the end of the output,
+visible if you pipe it into a hex-dumping program like `xxd`, `hd`, or my tool of choice, [`hexyl`](https://github.com/sharkdp/hexyl).)*
+
+#### Second Syscall
+
+Moving back to the next syscall, it starts out similarly, by setting up the registers:
+
+```
+┌─────────┬────────────────┐
+│ 8e - 93 │ b8 3c 00 00 00 │
+└─────────┴────────────────┘
+┌─────────┬────────────────┐
+│ 94 - 97 │ bf 00 00 00 00 │
+└─────────┴────────────────┘
+```
+* once again, the first each of these sets of 5-bytes is the 32-bit register, and the 4 bytes that follow are the value to set it to
+  * b8 is EAX, and is being set to 60.
+  * bf is EDI, and is being set to 0.
+```
+┌─────────┬───────┐
+│ 98 - 99 │ 0f 05 │
+└─────────┴───────┘
+```
+* Once again, we encounter a `syscall` instruction, but this time, it is much simpler.
+  * RAX is set to 60, which is the `exit` syscall
+    * `exit` gets its exit code from RDI, and exit code 0 means it is exiting successfully.
+
 
 [//]: <> ( vim: set et ai nowrap: )
