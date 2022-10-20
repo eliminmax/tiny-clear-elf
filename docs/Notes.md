@@ -240,7 +240,7 @@ segments are to be aligned to this value. If set to 0 or 1, alignment does not m
 
 # Assembly and Linux ABI
 
-A full list of syscalls can be found in the `SYSCALLS(2)` man page from the Linux man-pages project. The only two directly needed in this project are `write` and `exit`.
+A full list of syscalls can be found in the `SYSCALLS(2)` man page from the Linux man-pages project, and the registers that they read and write to are detailed in the confusingly-similar `SYSCALL(2)` man page from the same project. The only two directly needed in this project are `write` and `exit`.
 
 ## x86_64
 I figured that I'd start with `x86_64` assembly, as it's the native format for the system I'm working on.
