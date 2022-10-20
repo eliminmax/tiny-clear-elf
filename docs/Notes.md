@@ -258,18 +258,18 @@ RAX         | `48 b8`      | EAX         | `b8`         | AX          | `66 b8` 
 RBX         | `48 bb`      | EBX         | `bb`         | BX          | `66 bb`      | BH                                | `b7`                               | BL         | `b3`        | Base
 RCX         | `48 b9`      | ECX         | `b9`         | CX          | `66 b9`      | CH                                | `b5`                               | CL         | `b1`        | Counter
 RDX         | `48 ba`      | EDX         | `ba`         | DX          | `66 ba`      | DH                                | `b6`                               | DL         | `b2`        | Data (commonly extends the A register)
-RSI         | `48 be`      | ESI         | `be`         | SI          | `66 be`      |                                   |                                    | SIL        | `40 b6`     | Source index for string operations
-RDI         | `48 bf`      | EDI         | `bf`         | DI          | `66 bf`      |                                   |                                    | DIL        | `40 b7`     | Destination index for string operations
-RSP         | `48 bc`      | ESP         | `bc`         | SP          | `66 bc`      |                                   |                                    | SPL        | `40 b4`     | Stack Pointer
-RBP         | `48 bd`      | EBP         | `bd`         | BP          | `66 bd`      |                                   |                                    | BPL        | `40 b5`     | Base Pointer (meant for stack frames)
-R8          | `49 b8`      | R8D         | `41 b8`      | R8W         | `66 41 b8`   |                                   |                                    | R8B        | `41 b0`     | General purpose
-R9          | `49 b9`      | R9D         | `41 b9`      | R9W         | `66 41 b9`   |                                   |                                    | R9B        | `41 b1`     | General purpose
-R10         | `49 ba`      | R10D        | `41 ba`      | R10W        | `66 41 ba`   |                                   |                                    | R10B       | `41 b2`     | General purpose
-R11         | `49 bb`      | R11D        | `41 bb`      | R11W        | `66 41 bb`   |                                   |                                    | R11B       | `41 b3`     | General purpose
-R12         | `49 bc`      | R12D        | `41 bc`      | R12W        | `66 41 bc`   |                                   |                                    | R12B       | `41 b4`     | General purpose
-R13         | `49 bd`      | R13D        | `41 bd`      | R13W        | `66 41 bd`   |                                   |                                    | R13B       | `41 b5`     | General purpose
-R14         | `49 be`      | R14D        | `41 be`      | R14W        | `66 41 be`   |                                   |                                    | R14B       | `41 b6`     | General purpose
-R15         | `49 bf`      | R15D        | `41 bf`      | R15W        | `66 41 bf`   |                                   |                                    | R15B       | `41 b7`     | General purpose
+RSI         | `48 be`      | ESI         | `be`         | SI          | `66 be`      | N/A                               | N/A                                | SIL        | `40 b6`     | Source index for string operations
+RDI         | `48 bf`      | EDI         | `bf`         | DI          | `66 bf`      | N/A                               | N/A                                | DIL        | `40 b7`     | Destination index for string operations
+RSP         | `48 bc`      | ESP         | `bc`         | SP          | `66 bc`      | N/A                               | N/A                                | SPL        | `40 b4`     | Stack Pointer
+RBP         | `48 bd`      | EBP         | `bd`         | BP          | `66 bd`      | N/A                               | N/A                                | BPL        | `40 b5`     | Base Pointer (meant for stack frames)
+R8          | `49 b8`      | R8D         | `41 b8`      | R8W         | `66 41 b8`   | N/A                               | N/A                                | R8B        | `41 b0`     | General purpose
+R9          | `49 b9`      | R9D         | `41 b9`      | R9W         | `66 41 b9`   | N/A                               | N/A                                | R9B        | `41 b1`     | General purpose
+R10         | `49 ba`      | R10D        | `41 ba`      | R10W        | `66 41 ba`   | N/A                               | N/A                                | R10B       | `41 b2`     | General purpose
+R11         | `49 bb`      | R11D        | `41 bb`      | R11W        | `66 41 bb`   | N/A                               | N/A                                | R11B       | `41 b3`     | General purpose
+R12         | `49 bc`      | R12D        | `41 bc`      | R12W        | `66 41 bc`   | N/A                               | N/A                                | R12B       | `41 b4`     | General purpose
+R13         | `49 bd`      | R13D        | `41 bd`      | R13W        | `66 41 bd`   | N/A                               | N/A                                | R13B       | `41 b5`     | General purpose
+R14         | `49 be`      | R14D        | `41 be`      | R14W        | `66 41 be`   | N/A                               | N/A                                | R14B       | `41 b6`     | General purpose
+R15         | `49 bf`      | R15D        | `41 bf`      | R15W        | `66 41 bf`   | N/A                               | N/A                                | R15B       | `41 b7`     | General purpose
 
 When setting 64-bit registers' 32-bit equivalents, the higher 32-bits are zeroed out automatically. Thus, `b8 01 00 00 00` has the same effect as `48 b8 01 00 00 00 00 00 00 00`, in half the bytes.
 *(Incidentally, this caused me some trouble creating the above table, as the Netwide Assembler is smart enough to assemble* `mov rax,0` *as* `b8 00 00 00 00`, *and as I couldn't find the hex identifiers of the registers online,
