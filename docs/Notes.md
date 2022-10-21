@@ -1,5 +1,70 @@
 This document is primarily written for someone with similar background knowledge to me.
 
+# Table of Contents
+
+- [Table of Contents](#table-of-contents)
+- [ELF format](#elf-format)
+  * [ELF Header](#elf-header)
+    + [`e_ident` byte-by-byte](#e_ident-byte-by-byte)
+    + [Real-world example](#real-world-example)
+      - [`e_ident`:](#e_ident)
+      - [`e_type`:](#e_type)
+      - [`e_machine`:](#e_machine)
+      - [`e_version`](#e_version)
+      - [`e_entry`](#e_entry)
+      - [`e_phoff`](#e_phoff)
+      - [`e_shoff`](#e_shoff)
+      - [`e_flags`](#e_flags)
+      - [`e_ehsize`](#e_ehsize)
+      - [`e_phentsize`](#e_phentsize)
+      - [`e_phnum`](#e_phnum)
+      - [`e_shentsize`](#e_shentsize)
+      - [`e_shnum`](#e_shnum)
+      - [`e_shstrndx`](#e_shstrndx)
+  * [Program Header](#program-header)
+    + [Elf32_Phdr](#elf32_phdr)
+    + [Elf64_Phdr](#elf64_phdr)
+    + [Field values](#field-values)
+      - [`p_type`](#p_type)
+      - [`p_flags`](#p_flags)
+      - [`p_offset`](#p_offset)
+      - [`p_vaddr`](#p_vaddr)
+      - [`p_paddr`](#p_paddr)
+      - [`p_memsz`](#p_memsz)
+      - [`p_align`](#p_align)
+- [Assembly and Linux ABI](#assembly-and-linux-abi)
+  * [x86_64](#x86_64)
+    + [registers](#registers)
+    + [Linux ABI](#linux-abi)
+- [Bringing it all together - Real-World Example](#bringing-it-all-together---real-world-example)
+    + [ELF Header](#elf-header-1)
+      - [`e_ident`](#e_ident)
+      - [`e_type`](#e_type)
+      - [`e_machine`:](#e_machine-1)
+      - [`e_version`](#e_version-1)
+      - [`e_entry`](#e_entry-1)
+      - [`e_phoff`](#e_phoff-1)
+      - [`e_shoff`](#e_shoff-1)
+      - [`e_flags`](#e_flags-1)
+      - [`e_ehsize`](#e_ehsize-1)
+      - [`e_phentsize`](#e_phentsize-1)
+      - [`e_phnum`](#e_phnum-1)
+      - [`e_shentsize`](#e_shentsize-1)
+      - [`e_shnum`](#e_shnum-1)
+      - [`e_shstrndx`](#e_shstrndx-1)
+    + [Program Header](#program-header-1)
+      - [`p_type`](#p_type-1)
+      - [`p_flags`](#p_flags-1)
+      - [`p_offset`](#p_offset-1)
+      - [`p_vaddr`](#p_vaddr-1)
+      - [`p_paddr`](#p_paddr-1)
+      - [`p_filesz`](#p_filesz)
+      - [`p_memsz`](#p_memsz-1)
+      - [`p_align`](#p_align-1)
+    + [The rest of the file](#the-rest-of-the-file)
+      - [First Syscall](#first-syscall)
+      - [Second Syscall](#second-syscall)
+
 # ELF format
 
 This section was made with reference to `elf.h` from the GNU C Library, and `ELF(5)` from the Linux man-pages project.
@@ -474,7 +539,7 @@ The `e_ident` bytes are the same as the previously-analyzed busybox executable, 
 │ 50 - 57 │ 00 00 01 00 00 00 00 00 │
 └─────────┴─────────────────────────┘
 ```
-The address of the first byte of virtual memory to allocate
+The address of the first byte of virtual memory to allocate is 0x10000
 
 #### `p_paddr`
 ```
@@ -482,6 +547,7 @@ The address of the first byte of virtual memory to allocate
 │ 58 - 5f │ 00 00 01 00 00 00 00 00 │
 └─────────┴─────────────────────────┘
 ```
+The address of the first byte of physical memory to allocate is 0x10000
 
 #### `p_filesz`
 ```
@@ -489,6 +555,7 @@ The address of the first byte of virtual memory to allocate
 │ 60 - 67 │ 31 00 00 00 00 00 00 00 │
 └─────────┴─────────────────────────┘
 ```
+The size of the section in the file is 0x31 bytes
 
 #### `p_memsz`
 ```
@@ -496,6 +563,7 @@ The address of the first byte of virtual memory to allocate
 │ 68 - 6f │ 31 00 00 00 00 00 00 00 │
 └─────────┴─────────────────────────┘
 ```
+The section should be loaded into a 0x31-byte region of memory
 
 #### `p_align`
 ```
@@ -503,6 +571,7 @@ The address of the first byte of virtual memory to allocate
 │ 70 - 77 │ 02 00 00 00 00 00 00 00 │
 └─────────┴─────────────────────────┘
 ```
+The section must be aligned to an even-numbered address
 
 ### The rest of the file
 
