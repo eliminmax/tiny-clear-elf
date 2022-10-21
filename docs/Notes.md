@@ -36,6 +36,9 @@ This document is primarily written for someone with similar background knowledge
   * [x86_64](#x86_64)
     + [registers](#registers)
     + [Linux ABI](#linux-abi)
+  * [i386](#i386)
+    + [registers](#registers-1)
+    + [Linux ABI](#linux-abi-1)
 - [Bringing it all together - Real-World Example](#bringing-it-all-together---real-world-example)
     + [ELF Header](#elf-header-1)
       - [`e_ident`](#e_ident)
@@ -305,7 +308,7 @@ segments are to be aligned to this value. If set to 0 or 1, alignment does not m
 
 # Assembly and Linux ABI
 
-A full list of syscalls can be found in the `SYSCALLS(2)` man page from the Linux man-pages project, and the registers that they read and write to are detailed in the confusingly-similar `SYSCALL(2)` man page from the same project. The only two directly needed in this project are `write` and `exit`.
+A full list of syscalls can be found in the `SYSCALLS(2)` man page from the Linux man-pages project, and the registers that they read and write to are detailed in the confusingly-similarly named `SYSCALL(2)` man page from the same project. The only two directly needed in this project are `write` and `exit`.
 
 ## x86_64
 I figured that I'd start with `x86_64` assembly, as it's the native format for the system I'm working on.
@@ -348,6 +351,31 @@ The `syscall` instruction is `0f 05`, and it reads the system call number from R
 * The `exit` syscall is given the number `60`. It reads the exit code from RDI.
 
 On my primary system, running Pop!_OS 22.04, the full list of syscalls' numeric codes can be found in the file **/usr/include/x86_64-linux-gnu/asm/unistd_64.h** provided by the `linux-libc-dev:amd64` package
+
+## i386
+
+### registers
+
+ 32-bit value | 16-bit name | 16-bit value | 8 high bits of lower 16 bits name | 8 high bits of lower 16 bits value | 8-bit name | 8-bit value | Description
+--------------|-------------|--------------|-----------------------------------|------------------------------------|------------|-------------|-------------------------------------------
+ `b8`         | AX          | `66 b8`      | AH                                | `b4`                               | AL         | `b0`        | Accumulator
+ `bb`         | BX          | `66 bb`      | BH                                | `b7`                               | BL         | `b3`        | Base
+ `b9`         | CX          | `66 b9`      | CH                                | `b5`                               | CL         | `b1`        | Counter
+ `ba`         | DX          | `66 ba`      | DH                                | `b6`                               | DL         | `b2`        | Data (commonly extends the A register)
+ `be`         | SI          | `66 be`      | N/A                               | N/A                                | SIL        | `40 b6`     | Source index for string operations
+ `bf`         | DI          | `66 bf`      | N/A                               | N/A                                | DIL        | `40 b7`     | Destination index for string operations
+ `bc`         | SP          | `66 bc`      | N/A                               | N/A                                | SPL        | `40 b4`     | Stack Pointer
+ `bd`         | BP          | `66 bd`      | N/A                               | N/A                                | BPL        | `40 b5`     | Base Pointer (meant for stack frames)
+
+This is a subset of the registers available in x86_64.
+
+On my primary system, the full list of syscalls' numeric codes can be found in the file **/usr/i686-linux-gnu/include/asm/unistd_32.h**, provided by the `linux-libc-dev-i386-cross` package
+
+### Linux ABI
+
+There is no instructuion called `syscall` in the i386 Linux ABI, but the functionality is provided with the assembly `int 0x80`, which in hex is `cd 80`. It reads arguments from registers EBX, ECX, EDX, ESI, EDI, and EBP
+* The `write` syscall is given the number `4`. It reads the file descriptor to write to from EBX, the memory address of the message to print from ECX, and the size of the message from EDX.
+* The `exit` syscall is given the number `1`. It reads the exit code from EBX.
 
 # Bringing it all together - Real-World Example
 This the xxd-formatted hexdump of a simple 169-byte amd64 Hello world ELF binary I found on [StackOverflow](https://stackoverflow.com/a/72943538).
