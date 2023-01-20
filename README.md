@@ -11,7 +11,7 @@ Breaking it down further, what that does is print 3 ANSI escape sequences:
 2. `ESC[J` - clear the screen
 3. `ESC[3J` - clear any scrollback lines
 
-Note that these utilites are hand-written in a hex editor, so source code distribution is not really an applicable concept. As such, I am not releasing them under a formal license. If you want to use them, you can do so however you want. I'd appreciate it if you'd let me know, but that's not a requirement, just something I'm curious about.
+Note that these utilities are hand-written in a hex editor, so source code distribution is not really an applicable concept. As such, I am not releasing them under a formal license. If you want to use them, you can do so however you want. I'd appreciate it if you'd let me know, but that's not a requirement, just something I'm curious about.
 
 I can't test all of these on real hardware, so I plan on using QEMU to test them. I also should note that am writing this README having never worked with pure assembly of any kind in any capacity, so I might be biting off more than I can chew with this project. For now, this repo is a statement of intent rather than a finished project.
 
@@ -32,8 +32,8 @@ I can't test all of these on real hardware, so I plan on using QEMU to test them
     * [x] amd64
     * [x] i386
   * [ ] ARM family
-    * [ ] armhf
-    * [ ] armel
+    * [x] armhf
+    * [x] armel
     * [ ] aarch64
   * [ ] MIPS family
     * [ ] mipsel
@@ -42,4 +42,4 @@ I can't test all of these on real hardware, so I plan on using QEMU to test them
     * [ ] ppc64el
   * [ ] IBM Z Family
     * [ ] s390x
-* [ ] Create a logo - an image of a transparent pointy-eared humanoid that takes up only about 1/16h of the image
+* [ ] Create a logo - an image of a transparent pointy-eared humanoid that takes up only about 1/16th of the image
