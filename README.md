@@ -31,7 +31,7 @@ I can't test all of these on real hardware, so I plan on using QEMU to test them
   * [x] x86 family
     * [x] amd64
     * [x] i386
-  * [ ] ARM family
+  * [ ] ARM family - in progress
     * [x] armhf
     * [x] armel
     * [ ] aarch64
