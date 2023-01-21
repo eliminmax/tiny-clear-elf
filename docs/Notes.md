@@ -253,7 +253,7 @@ Let's split that up, section by section:
 
 ## Program Header
 
-The Program header is a struct wuth 8 values within it, defining the location and properties of a segment within the program. The both the order and the size of the Program Header fields depend on whether the ELF file is 32-bit or 64-bit.
+The Program header is a struct with 8 values within it, defining the location and properties of a segment within the program. The both the order and the size of the Program Header fields depend on whether the ELF file is 32-bit or 64-bit.
 
 ### Elf32_Phdr
 data       | bytes | type       | description
@@ -291,7 +291,7 @@ This is similar to Unix permissions. If the segment is readable, add 4, if it's 
 
 #### `p_offset`
 
-Offset from the begining of the file to the segment described
+Offset from the beginning of the file to the segment described
 
 #### `p_vaddr`
 
@@ -314,7 +314,10 @@ segments are to be aligned to this value. If set to 0 or 1, alignment does not m
 
 A full list of syscalls can be found in the `SYSCALLS(2)` man page from the Linux man-pages project, and the registers that they read and write to are detailed in the confusingly-similarly named `SYSCALL(2)` man page from the same project. The only two directly needed in this project are `write` and `exit`.
 
+Note that the register "value" field is the way to target the register with a `mov` command or its equivalent.
+
 ## x86_64
+
 I figured that I'd start with `x86_64` assembly, as it's the native format for the system I'm working on.
 
 ### registers
@@ -416,7 +419,7 @@ I intend to go over every byte within it and explain its purpose, as a way to te
 └─────────┴─────────────────────────────────────────────────┘
 ```
 
-The `e_ident` bytes are the same as the previously-analyzed busybox executable, so I'm going to just be lazy and paste in the previous analysis
+The `e_ident` bytes are the same as the previously-analyzed Busybox executable, so I'm going to just be lazy and paste in the previous analysis
 * The first 4 bytes (`0x7f454c46`) are the magic number
 * The next byte (`0x02`) indicates that this is a 64-bit ELF file
 * The byte after that (`0x01`) indicates that this is little-endian encoded, meaning that, for instance, an unsigned 16-bit integer with the value of 2 would be stored as `0x0200` rather than `0x0002`.
@@ -563,7 +566,7 @@ The `e_ident` bytes are the same as the previously-analyzed busybox executable, 
 │ 48 - 4f │ 00 00 00 00 00 00 00 00 │
 └─────────┴─────────────────────────┘
 ```
-* This segment begings at byte 0 of the file
+* This segment begins at byte 0 of the file
 
 #### `p_vaddr`
 ```
