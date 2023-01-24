@@ -11,11 +11,11 @@
 00000030: 0000 0000 4000 3800 0100 0000 0000 0000  ....@.8.........
 00000040: 0100 0000 0500 0000 0000 0000 0000 0000  ................
 00000050: 0000 0100 0000 0000 0000 0000 0000 0000  ................
-00000060: a400 0000 0000 0000 a400 0000 0000 0000  ................
+00000060: a100 0000 0000 0000 a100 0000 0000 0000  ................
 00000070: 0200 0000 0000 0000 b801 0000 00bf 0100  ................
-00000080: 0000 be9a 0001 00ba 0a00 0000 0f05 b83c  ...............<
-00000090: 0000 00bf 0000 0000 0f05 1b5b 481b 5b4a  ...........[H.[J
-000000a0: 1b5b 334a                                .[3J
+00000080: 0000 be97 0001 00ba 0a00 0000 0f05 b83c  ...............<
+00000090: 0000 0031 ff0f 051b 5b48 1b5b 4a1b 5b33  ...1....[H.[J.[3
+000000a0: 4a                                       J
 ```
 
 ## ASM
@@ -77,9 +77,9 @@ BITS 64
   ; p_paddr
     dq 0          ; load this segment from physical address 0 in file
   ; p_filesz
-    dq 164        ; size (in bytes) of the segment in the file
+    dq 161        ; size (in bytes) of the segment in the file
   ; p_memsz
-    dq 164        ; size (in bytes) of memory to load the segment into
+    dq 161        ; size (in bytes) of memory to load the segment into
   ; p_align
     dq 2          ; segment alignment - segment addresses must be aligned to multiples of this value
 
@@ -88,15 +88,15 @@ BITS 64
   ; so it's more efficient to set EAX than RAX, if the value fits
   mov eax,1       ; b8 01 00 00 00 - set the EAX register to 1
   mov edi,1       ; bf 01 00 00 00 - set the EDI register to 1
-  mov esi,0x1009a ; be 9a 00 01 00 - set the ESI register to 0x1009a
+  mov esi,0x10097 ; be 97 00 01 00 - set the ESI register to 0x10097
   mov edx,10      ; ba 0a 00 00 00 - set the EDX register to 10
   syscall         ; 0f 05 - syscall
                     ; read the system call number from RAX - 1 is write
                     ; load the file descriptor to write to from RDI - 1 is stdout
-                    ; load the bytes to write from the memory address in RSI - 0x1009a is 0x9a (154) bytes in
+                    ; load the bytes to write from the memory address in RSI - 0x10097 is 0x97 (154) bytes in
                     ; load the number of bytes to write from RDX
   mov eax,60      ; b8 3c 00 00 00 - set the EAX register to 60
-  mov edi,0       ; bf 00 00 00 00 - set the EDI register to 0
+  xor edi,edi     ; 31 ff - set the EDI register to 0 by XOR'ing it to itself
   syscall         ; 0f 05 - syscall
                     ; read the system call number from RAX - 60 is exit
                     ; load the error code from RDI - 0 means no error
