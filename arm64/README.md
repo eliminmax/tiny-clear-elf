@@ -24,7 +24,7 @@ Unfortunately, NASM is only usable for the x86 architecture family, so I can't p
 
 The file has 4 parts to it - the ELF header, the Program Header table, the code, and the data.
 
-Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry in the Program Header table is 32 bytes long. The string to print is 10 bytes long.
+Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry in the Program Header table is 56 bytes long. The string to print is 10 bytes long.
 
 ### Disassembly
 
@@ -57,7 +57,7 @@ Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry 
     # EV_CURRENT - the only valid value
     .4byte 0x1
   # e_entry
-    # The virtual memory to transfer control at. The file is loaded into memory address 0x010000, and the code starts 0x78 bytes into the file
+    # The virtual memory to transfer control at. The file is loaded into memory address 0x10000, and the code starts 0x78 bytes into the file
     .8byte 0x10078
   # e_phoff
     # the offset from the beginning of the file to the program header table
@@ -120,13 +120,13 @@ svc 0x0
 # The escape sequences
 .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
 
-# It's going to include 2 extra bytes, might as well ensure that they have easily-identified values
+# Padding
 .ascii "\xff""\xff"
 ```
 
 #### Reassembly
 
-To re-assemble the disassembly, you need to first assemble it with a 32-bit ARM version of the GNU assembler (`gas`, or just `as`). The problem is that it adds its own ELF header and program and section tables, so you then need to extract the actual file out from its output.
+To re-assemble the disassembly, you need to first assemble it with a 64-bit ARM version of the GNU assembler (`gas`, or just `as`). The problem is that it adds its own ELF header and program and section tables, so you then need to extract the actual file out from its output.
 
 If you save the disassembly to `clear.S`, you'd need to do the following to reassemble it:
 
