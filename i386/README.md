@@ -9,10 +9,10 @@
 00000010: 0200 0300 0100 0000 5400 0200 3400 0000  ........T...4...
 00000020: 0000 0000 0000 0000 3400 2000 0100 0000  ........4. .....
 00000030: 0000 0000 0100 0000 0000 0000 0000 0200  ................
-00000040: 0000 0000 8000 0000 8000 0000 0500 0000  ................
-00000050: 0200 0000 b804 0000 00bb 0100 0000 b976  ...............v
-00000060: 0002 00ba 0a00 0000 cd80 b801 0000 00bf  ................
-00000070: 0000 0000 cd80 1b5b 481b 5b4a 1b5b 334a  .......[H.[J.[3J
+00000040: 0000 0000 7d00 0000 7d00 0000 0500 0000  ....}...}.......
+00000050: 0200 0000 b804 0000 00bb 0100 0000 b973  ...............s
+00000060: 0002 00ba 0a00 0000 cd80 b801 0000 0031  ...............1
+00000070: dbcd 801b 5b48 1b5b 4a1b 5b33 4a         ....[H.[J.[3J
 ```
 
 ## ASM
@@ -72,9 +72,9 @@ BITS 32
   ; p_paddr
     dd 0          ; load this segment from physical address 0 in file
   ; p_filesz
-    dd 128        ; size (in bytes) of the segment in the file
+    dd 125        ; size (in bytes) of the segment in the file
   ; p_memsz
-    dd 128        ; size (in bytes) of memory to load the segment into
+    dd 125        ; size (in bytes) of memory to load the segment into
   ; p_flags
     dd 5          ; segment permissions - PF_X + PF_R (0x1 + 0x100) - readable and executable
   ; p_align
@@ -83,15 +83,15 @@ BITS 32
 ; THE ACTUAL CODE
   mov eax,4       ; b8 04 00 00 00 - set the EAX register to 4
   mov ebx,1       ; bb 01 00 00 00 - set the EBX register to 1
-  mov ecx,0x20076 ; b9 76 00 02 00 - set the ECX register to 0x20076
+  mov ecx,0x20073 ; b9 73 00 02 00 - set the ECX register to 0x20073
   mov edx,10      ; ba 0a 00 00 00 - set the EDX register to 10
   int 0x80        ; cd 80 - syscall
                     ; read the system call number from EAX - 4 is write
                     ; load the file descriptor to write to from EBX - 1 is stdout
-                    ; load the bytes to write from the memory address in ECX - 0x20076 is 0x76 (118) bytes in
+                    ; load the bytes to write from the memory address in ECX - 0x20073 is 0x73 (118) bytes in
                     ; load the number of bytes to write from EDX
   mov eax,0x1     ; b8 01 00 00 00 - set the EAX register to 1
-  mov ebx,0x0     ; bf 00 00 00 00 - set the EBX register to 0
+  xor ebx,ebx     ; 31 db - set the EBX register to 0 by XOR'ing it to itself
   int 0x80        ; cd 80  - syscall
                     ; read the system call number from EAX - 1 is exit
                     ; load the error code from EBX - 0 means no error
