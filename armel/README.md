@@ -34,94 +34,110 @@ Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry 
     # EI_MAG0, EI_MAG1, EI_MAG2, EI_MAG3: ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3 - the ELF magic number
     .ascii "\x7f""ELF"
     # EI_CLASS: 1 is ELFCLASS32 - meaning it's a 32-bit object
-    .byte 1
+    .byte 0x1
     # EI_DATA: 1 is ELFDATA2LSB - meaning that values are little-endian encoded
-    .byte 1
+    .byte 0x1
     # EI_VERSION: 1 is EV_CURRENT - the only valid value
-    .byte 1
+    .byte 0x1
     # EI_OSABI: 0 is ELFOSABI_NONE - the generic SYSV ABI
-    .byte 0
+    .byte 0x0
     # EI_ABIVERSION: used to distinguish between incompatible ABI versions. Unused for the SYSV ABI
-    .byte 0
+    .byte 0x0
     # The remaining 7 bytes are unused, and should be set to 0
-    .4byte 0
-    .2byte 0
-    .byte 0
+    .4byte 0x0
+    .2byte 0x0
+    .byte 0x0
   # e_type
     # ET_EXEC - executable file
-    .2byte 2
+    .2byte 0x2
   # e_machine
     # EM_ARM
-    .2byte 40
+    .2byte 0x28
   # e_version
     # EV_CURRENT - the only valid value
-    .4byte 1
+    .4byte 0x1
   # e_entry
-    # The virtual memory to transfer control at. The file is loaded into memory address 0x020000, and the code starts 0x54 bytes into the file
-    .4byte 0x00020054
+    # The virtual memory to transfer control at. The file is loaded into memory address 0x20000, and the code starts 0x54 bytes into the file
+    .4byte 0x20054
   # e_phoff
     # the offset from the beginning of the file to the program header table
-    .4byte 52
+    .4byte 0x34
   # e_shoff
     # the offset from the beginning of the file to the section header table - zero, as there is no section header table
-    .4byte 0
+    .4byte 0x0
   # e_flags
     # processor-specific flags. None are in use here.
-    .4byte 0
+    .4byte 0x0
   # e_ehsize
     # the size (in bytes) of the ELF header. for a 32-bit ELF, this will always be 52
-    .2byte 52
+    .2byte 0x34
   # e_phentsize
     # the size (in bytes) of an entry in the program header table.
-    .2byte 32
+    .2byte 0x20
   # e_phnum
     # the number of entries in the program header table
-    .2byte 1
+    .2byte 0x1
   # e_shentsize
     # the size of an entry in the section header table, or 0 if there is no section header table
-    .2byte 0
+    .2byte 0x0
   # e_shnum
     # the number of entries in the section header table
-    .2byte 0
+    .2byte 0x0
   # e_shstrndx
     # the index of the section header table entry names - zero, as there is no section header table
-    .2byte 0
+    .2byte 0x0
+
 # Program Header Table
   # Program header entry
     # p_type - PT_LOAD (1) - a loadable program segment
-    .4byte 1
+    .4byte 0x1
     # p_offset - offset (in bytes) of start of segment in file
-    .4byte 0
+    .4byte 0x0
     # p_vaddr - load this segment into memory at the address 0x20000
     .4byte 0x020000
     # p_paddr - load this segment from physical address 0 in file
-    .4byte 0
+    .4byte 0x0
     # p_filesz - size (in bytes) of the segment in the file
     .4byte 0x82
     # p_memsz - size (in bytes) of memory to load the segment into
     .4byte 0x82
     # p_flags - segment permissions - PF_X + PF_R (0x1 + 0x100) - readable and executable
-    .4byte 5
+    .4byte 0x5
     # p_align - segment alignment - segment addresses must be aligned to multiples of this value
-    .4byte 2
+    .4byte 0x2
 
 # The actual code
-
-mov r7, #4
-mov r0, #1
-movw r1, #0x78
-movt r1, #2
-mov r2, #0xa
-svc 0
-mov r7, #1
-mov r0, #0
-svc 0
+  # first syscall: write(1, 0x20078, 10)
+    # On 32-bit arm systems, write is syscall 4.
+    mov r7, 0x4
+    # STDOUT is file descriptor #1
+    mov r0, 0x1
+    # Because each instruction is exactly 32 bits long,
+    # there's not enough room to set all 32 bits with 1
+    # `mov` command, but `mov` zeros out the bits not explicitly set.
+    # The solution I'm using is to set the lower bits with `movw` and the upper with `movt`.
+      # set the lower bits to 0x0078
+      movw r1, 0x78
+      # set the upper bits to 0x0002
+      movt r1, 0x2
+      # thus, the value of r1 is set to 0x20078 - the memory address of the data to print.
+    # Write 10 bytes of data
+    mov r2, 0xa
+    # supervisor call 0 is equivalent to amd64's syscall and i386's int 0x80
+    svc 0x0
+  # Second syscall: exit(0)
+    # on 32-bit arm systems, exit is syscall 1.
+    mov r7, 0x1
+    # error code 0 - no error
+    mov r0, 0x0
+    # supervisor call 0
+    svc 0x0
 
 # The escape sequences
-.ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
+  .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
 
-# It's going to include 2 extra bytes, might as well ensure that they have easily-identified values
-.ascii "\xff""\xff"
+# Padding
+  .ascii "\xff""\xff"
 ```
 
 #### Reassembly

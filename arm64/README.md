@@ -86,6 +86,7 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
   # e_shstrndx
     # the index of the section header table entry names - zero, as there is no section header table
     .2byte 0x0
+
 # Program Header Table
   # Program header entry
     # p_type - PT_LOAD (1) - a loadable program segment
@@ -106,22 +107,37 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     .8byte 0x2
 
 # The actual code
-
-mov w8, 0x40
-mov x0, 0x1
-mov x1, 0x10000
-movk x1, 0x9c
-mov x2, 0xa
-svc 0x0
-mov w8, 0x5d
-mov x0, 0x0
-svc 0x0
+  # first syscall: write(1, 0x1009c, 10)
+    # On 64-bit arm systems, write is syscall 64.
+    mov w8, 0x40
+    # STDOUT is file descriptor #1
+    mov x0, 0x1
+    # Because each instruction is exactly 32 bits long,
+    # there's not enough room to set all 32 bits with 1
+    # `mov` command, but `mov` zeros out the bits not explicitly set.
+    # The solution I'm using is to set the register to 0x10000, then use movk to set the lowest bits only.
+        # set x1 to 0x10000
+      mov x1, 0x10000
+      # set the lowest 16 bits to 0x9c
+      movk x1, 0x9c
+      # thus, the value of r1 is set to 0x1009c - the memory address of the data to print.
+    # Write 10 bytes of data
+    mov x2, 0xa
+    # supervisor call 0 is equivalent to amd64's syscall and i386's int 0x80
+    svc 0x0
+  # Second syscall: exit(0)
+    # on 64-bit arm systems, exit is syscall 93.
+    mov w8, 0x5d
+    # error code 0 - no error
+    mov x0, 0x0
+    # supervisor call 0
+    svc 0x0
 
 # The escape sequences
-.ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
+  .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
 
 # Padding
-.ascii "\xff""\xff"
+  .ascii "\xff""\xff"
 ```
 
 #### Reassembly
