@@ -38,8 +38,8 @@ I can't test all of these on real hardware, so I plan on using QEMU to test them
   * [ ] MIPS family
     * [ ] mipsel
     * [ ] mips64el
-  * [ ] PowerPC Family
-    * [ ] ppc64el
-  * [ ] IBM Z Family
-    * [ ] s390x
+  * [x] PowerPC Family
+    * [x] ppc64el
+  * [x] IBM Z Family
+    * [x] s390x
 * [ ] Create a logo - an image of a transparent pointy-eared humanoid that takes up only about 1/16th of the image
