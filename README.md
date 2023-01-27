@@ -31,10 +31,10 @@ I can't test all of these on real hardware, so I plan on using QEMU to test them
   * [x] x86 family
     * [x] amd64
     * [x] i386
-  * [ ] ARM family - in progress
+  * [x] ARM family - in progress
     * [x] armhf
     * [x] armel
-    * [ ] aarch64
+    * [x] aarch64
   * [ ] MIPS family
     * [ ] mipsel
     * [ ] mips64el
