@@ -1,4 +1,4 @@
-# amd64 tiny-clear-elf `clear`
+# s390x tiny-clear-elf `clear`
 
 ## Hexdump of the executable
 
