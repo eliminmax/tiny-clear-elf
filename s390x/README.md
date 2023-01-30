@@ -55,7 +55,7 @@
     # the offset from the beginning of the file to the program header table
     .8byte 0x40
   # e_shoff
-    # thebat --line-range 32:140 ../arm64/README.md offset from the beginning of the file to the section header table - zero, as there is no section header table
+    # the offset from the beginning of the file to the section header table - zero, as there is no section header table
     .8byte 0x0
   # e_flags
     # processor-specific flags. None are in use here.
