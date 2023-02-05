@@ -124,7 +124,7 @@ Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry 
     # system call time
     syscall
   # Second syscall: exit(0)
-    # On mips/o32, write is syscall 4001 (0xfa1 in hex)
+    # On mips/o32, exit is syscall 4001 (0xfa1 in hex)
     addiu $v0, $zero, 0xfa1
     # Exit code is zero
     addiu $a0, $zero, 0
