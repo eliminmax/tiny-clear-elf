@@ -1,0 +1,155 @@
+# mipsel tiny_clear_elf `clear`
+
+## Hexdump of the executable
+
+*made with xxd*
+
+```xxd
+00000000: 7f45 4c46 0201 0100 0000 0000 0000 0000  .ELF............
+00000010: 0200 0800 0100 0000 7800 0100 0000 0000  ........x.......
+00000020: 4000 0000 0000 0000 0000 0000 0000 0000  @...............
+00000030: 0000 0080 4000 3800 0100 0000 0000 0000  ....@.8.........
+00000040: 0100 0000 0500 0000 0000 0000 0000 0000  ................
+00000050: 0000 0100 0000 0000 0000 0000 0000 0000  ................
+00000060: a600 0000 0000 0000 a600 0000 0000 0000  ................
+00000070: 0200 0000 0000 0000 8913 0224 0100 0424  ...........$...$
+00000080: 0100 053c 9c00 a534 0a00 0624 0c00 0000  ...<...4...$....
+00000090: c213 0224 0000 0424 0c00 0000 1b5b 481b  ...$...$.....[H.
+000000a0: 5b4a 1b5b 334a                           [J.[3J
+```
+
+## Breakdown
+
+The file has 4 parts to it - the ELF header, the Program Header table, the code, and the data.
+
+Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry in the Program Header table is 56 bytes long. The string to print is 10 bytes long.
+
+### Disassembly
+
+```asm
+.section .text
+# ELF ehdr
+  # e_ident
+    # EI_MAG0, EI_MAG1, EI_MAG2, EI_MAG3: ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3 - the ELF magic number
+    .ascii "\x7f""ELF"
+    # EI_CLASS: 2 is ELFCLASS64 - meaning it's a 64-bit object
+    .byte 0x2
+    # EI_DATA: 1 is ELFDATA2LSB - meaning that values are little-endian encoded
+    .byte 0x1
+    # EI_VERSION: 1 is EV_CURRENT - the only valid value
+    .byte 0x1
+    # EI_OSABI: 0 is ELFOSABI_NONE - the generic SYSV ABI
+    .byte 0x0
+    # EI_ABIVERSION: used to distinguish between incompatible ABI versions. Unused for the SYSV ABI
+    .byte 0x0
+    # The remaining 7 bytes are unused, and should be set to 0
+    .4byte 0x0
+    .2byte 0x0
+    .byte 0x0
+  # e_type
+    # ET_EXEC - executable file
+    .2byte 0x2
+  # e_machine
+    # EM_MIPS
+    .2byte 0x8
+  # e_version
+    # EV_CURRENT - the only valid value
+    .4byte 0x1
+  # e_entry
+    # The virtual memory to transfer control at. The file is loaded into memory address 0x10000, and the code starts 0x78 bytes into the file
+    .8byte 0x10078
+  # e_phoff
+    # the offset from the beginning of the file to the program header table
+    .8byte 0x40
+  # e_shoff
+    # the offset from the beginning of the file to the section header table - zero, as there is no section header table
+    .4byte 0x0
+  # e_flags
+    # processor-specific flags. Not sure if this is needed, but it can't hurt
+    # 0x8------- = mips64r2
+    .4byte 0x80000000
+  # e_ehsize
+    # the size (in bytes) of the ELF header. for a 64-bit ELF, this will always be 64
+    .2byte 0x40
+  # e_phentsize
+    # the size (in bytes) of an entry in the program header table.
+    .2byte 0x38
+  # e_phnum
+    # the number of entries in the program header table
+    .2byte 0x1
+  # e_shentsize
+    # the size of an entry in the section header table, or 0 if there is no section header table
+    .2byte 0x0
+  # e_shnum
+    # the number of entries in the section header table
+    .2byte 0x0
+  # e_shstrndx
+    # the index of the section header table entry names - zero, as there is no section header table
+    .2byte 0x0
+
+# Program Header Table
+  # Program header entry
+    # p_type - PT_LOAD (1) - a loadable program segment
+    .4byte 0x1
+    # p_offset - offset (in bytes) of start of segment in file
+    .8byte 0x0
+    # p_vaddr - load this segment into memory at the address 0x10000
+    .8byte 0x010000
+    # p_paddr - load this segment from physical address 0 in file
+    .8byte 0x0
+    # p_filesz - size (in bytes) of the segment in the file
+    .8byte 0xa6
+    # p_memsz - size (in bytes) of memory to load the segment into
+    .8byte 0xa6
+    # p_flags - segment permissions - PF_X + PF_R (0x1 + 0x100) - readable and executable
+    .8byte 0x5
+    # p_align - segment alignment - segment addresses must be aligned to multiples of this value
+    .8byte 0x2
+
+# The actual code
+  # first syscall: write(1, 0x1009c, 10)
+    # On mips/n64, write is syscall 5001 (0x1389 in hex)
+    # add 0xfa4 to the contents of the $zero register, store the result in $v0
+    addiu $v0, $zero, 0x1389
+    # STDOUT is always file descriptor 1
+    addiu $a0, $zero, 0x1
+    # Because each instruction is exactly 32 bits long,
+    # there's not enough room to set all 32 bits with 1 instruction, so to set the register,
+    # we need to split it into two steps.
+      # load 0x1 into the upper 16 bits of $a1 - this zeroes out the lower 16 bits.
+      lui $a1, 0x1
+      # bitwise OR $a1 against 0x9c, save the result to $a1, to set the lower bits properly.
+      ori $a1, $a1, 0x9c
+    # Write 10 bytes of data
+    addiu $a2, $zero, 0xa
+    # system call time
+    syscall
+  # Second syscall: exit(0)
+    # On mips/n64, exit is syscall 5058 (0x13c2 in hex)
+    addiu $v0, $zero, 0x13c2
+    # Exit code is zero
+    addiu $a0, $zero, 0
+    # system call time
+    syscall
+
+# The escape sequences
+  .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
+
+# Need 10 bytes of padding, so just copy the same value because why not
+  .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
+```
+
+#### Reassembly
+
+I'm using the same technique I hacked together for the mipsel architecture, but this time, it has 10 bytes of padding, rather than 14.
+
+```sh
+# assemble
+as -o clear.o clear.S
+# extract
+objcopy --only-section .text -O binary clear.o clear.unwrapped
+# extracted binary will have 2 trailing bytes to discard
+head -c-10 clear.unwrapped > clear
+# mark clear as executable
+chmod +x clear
+```
