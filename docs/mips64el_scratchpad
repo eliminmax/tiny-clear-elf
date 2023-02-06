@@ -1,0 +1,55 @@
+first syscall:
+
+set v0 to 0xfa4
+     assembly: addiu $v0, 0x1389($zero)
+    big bin f: 001001 00000 00010 0001001110001001
+    big bin n: 0010 0100 0000 0010 0001 0011 1000 1001
+    big hex b:    2    4    0    2    1    3    8    9
+    big hex p: 24 02 13 89
+   little hex: 8913 0224
+
+set a0 to 0x1
+     assembly: addiu $a0, 0x1($zero)
+    big bin f: 001001 00000 00100 0000000000000001
+    big bin n: 0010 0100 0000 0100 0000 0000 0000 0001
+    big hex b:    2    4    0    4    0    0    0    1
+    big hex p: 24 04 00 01
+   little hex: 0100 0424
+
+set a1 to 0x100078
+     assembly: lui $a1, 0x01($zero); ori $a1,0x78($a1)
+    big bin f: 001111 00000 00101 0000000000000001     ; 001101 00101 00101 0000000001111000
+    big bin n: 0011 1100 0000 0101 0000 0000 0000 0001 ; 0011 0100 1010 0101 0000 0000 0111 1000
+    big hex b:    3    c    0    5    0    0    0    1 ;    3    4    a    5    0    0    7    8
+    big hex p: 3c 05 00 01                             ; 34 a5 00 78
+   little hex: 0100 053c 7800 a534
+
+set a2 to 0xa:
+     assembly: addiu $a2, 0xa($zero)
+    big bin f: 001001 00000 00110 0000000000001010
+    big bin n: 0010 0100 0000 0110 0000 0000 0000 1010
+    big hex b:    2    4    0    6    0    0    0    a
+    big hex p: 24 06 00 0a
+   little hex: 0a00 0624
+
+syscall
+
+second syscall:
+
+set v0 to 0xfa1
+      assembly: addiu $v0 0x13c2($zero)
+     big bin f: 001001 00000 00010 0001001111000010
+     big bin n: 0010 0100 0000 0010 0001 0011 1100 0010
+     big hex b:    2    4    0    2    1    3    c    2
+     big hex p: 24 02 13 c2
+    little hex: c213 0224
+
+set a0 to 0
+      assembly: addiu $a0 0x0($zero)
+     big bin f: 001001 00000 00100 0000000000000000
+     big bin n: 0010 0100 0000 0100 0000 0000 0000 0000
+     big hex b:    2    4    0    4    0    0    0    0
+     big hex p: 24 04 00 00
+    little hex: 0000 0424
+
+syscall
