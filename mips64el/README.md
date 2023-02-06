@@ -1,4 +1,4 @@
-# mipsel tiny_clear_elf `clear`
+# mips64el tiny_clear_elf `clear`
 
 ## Hexdump of the executable
 
