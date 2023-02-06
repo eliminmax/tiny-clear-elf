@@ -1,20 +1,21 @@
-# s390x tiny-clear-elf `clear`
+# ppc64el tiny-clear-elf `clear`
 
 ## Hexdump of the executable
 
 *made with xxd*
 
 ```xxd
-00000000: 7f45 4c46 0202 0100 0000 0000 0000 0000  .ELF............
-00000010: 0002 0016 0000 0001 0000 0000 0001 0078  ...............x
-00000020: 0000 0000 0000 0040 0000 0000 0000 0000  .......@........
-00000030: 0000 0000 0040 0038 0001 0000 0000 0000  .....@.8........
-00000040: 0000 0001 0000 0005 0000 0000 0000 0000  ................
-00000050: 0000 0000 0001 0000 0000 0000 0000 0000  ................
-00000060: 0000 0000 0000 0098 0000 0000 0000 0098  ................
-00000070: 0000 0000 0000 0002 a729 0001 c031 0001  .........)...1..
-00000080: 008e a749 000a 0a04 a729 0000 0a01 1b5b  ...I.....).....[
-00000090: 481b 5b4a 1b5b 334a                      H.[J.[3J
+00000000: 7f45 4c46 0201 0100 0000 0000 0000 0000  .ELF............
+00000010: 0200 1500 0100 0000 7800 0100 0000 0000  ........x.......
+00000020: 4000 0000 0000 0000 0000 0000 0000 0000  @...............
+00000030: 0200 0000 4000 3800 0100 0000 0000 0000  ....@.8.........
+00000040: 0100 0000 0500 0000 0000 0000 0000 0000  ................
+00000050: 0000 0100 0000 0000 0000 0000 0000 0000  ................
+00000060: a600 0000 0000 0000 a600 0000 0000 0000  ................
+00000070: 0200 0000 0000 0000 0400 0038 0100 6038  ...........8..`8
+00000080: 9c00 8038 0100 843c 0a00 a038 0200 0044  ...8...<...8...D
+00000090: 0100 0038 0000 6038 0200 0044 1b5b 481b  ...8..`8...D.[H.
+000000a0: 5b4a 1b5b 334a                           [J.[3J
 ```
 
 ## ASM
@@ -27,8 +28,8 @@
     .ascii "\x7f""ELF"
     # EI_CLASS: 2 is ELFCLASS64 - meaning it's a 64-bit object
     .byte 0x2
-    # EI_DATA: 2 is ELFDATA2MSB - meaning that values are big-endian encoded
-    .byte 0x2
+    # EI_DATA: 1 is ELFDATA2LSB - meaning that values are little-endian encoded
+    .byte 0x1
     # EI_VERSION: 1 is EV_CURRENT - the only valid value
     .byte 0x1
     # EI_OSABI: 0 is ELFOSABI_NONE - the generic SYSV ABI
@@ -43,8 +44,8 @@
     # ET_EXEC - executable file
     .2byte 0x2
   # e_machine
-    # EM_S390
-    .2byte 0x16
+    # EM_PPC64
+    .2byte 0x15
   # e_version
     # EV_CURRENT - the only valid value
     .4byte 0x1
@@ -58,8 +59,8 @@
     # the offset from the beginning of the file to the section header table - zero, as there is no section header table
     .8byte 0x0
   # e_flags
-    # processor-specific flags. None are in use here.
-    .4byte 0x0
+    # processor-specific flags. Must be set to 2
+    .4byte 0x2
   # e_ehsize
     # the size (in bytes) of the ELF header. for a 64-bit ELF, this will always be 64
     .2byte 0x40
@@ -92,36 +93,46 @@
     # p_paddr - load this segment from physical address 0 in file
     .8byte 0x0
     # p_filesz - size (in bytes) of the segment in the file
-    .8byte 0x98
+    .8byte 0xa6
     # p_memsz - size (in bytes) of memory to load the segment into
-    .8byte 0x98
+    .8byte 0xa6
     # p_align - segment alignment - segment addresses must be aligned to multiples of this value
     .8byte 0x2
 
 # The actual code
   # first syscall: write(1, 0x1008e, 10)
+    # write is syscall #4
+    li %r0, 0x4
     # STDOUT is file descriptor #1
-    lghi %r2, 0x1
-    # the memory address of the data to write is 0x1008e
-    lgfi %r3, 0x1008e
+    li %r3, 0x1
+    # the memory address of the data to write is 0x1009c
+    li %r4, 0x9c
+    addis %r4, %r4, 0x1
     # the number of bytes to write is 10
-    lghi %r4, 0xa
-    # instead of writing the syscall number (NR) to r1 then calling svc 0, one can simply call svc NR if it's less than 255.
-    # write is syscall 4
-    svc 4
+    li %r5, 0xa
+    # syscall instruction
+    sc
   # Second syscall: exit(0)
+    # exit is syscall #1
+    li %r0, 1
     # error code 0 - no error
-    lghi %r2, 0
-    # exit is syscall 1
-    svc 1
+    li %r3, 0
+    # syscall instruction
+    sc
+    
 
 # The escape sequences
   .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
+
+# Padding
+
+.2byte 0xffff
 ```
 
 ### Reassembly
 
 1. Copy the above assembly code into a file called `clear.S`.
-2. Using an s390x version of GNU binutils, assemble it with `as clear.S -o clear.o`.
-3. "Link" it, outputting the `clear` binary, but omitting the binutils-provided headers: `ld clear.o --oformat binary -o clear`
-
+2. Using an powerpc64le version of GNU binutils, assemble it with `as clear.S -o clear.o`.
+3. Link it, outputting the `clear` binary, but omitting the binutils-provided headers: `ld clear.o --oformat binary -o clear_wrapped`
+4. Remove the padding bytes from the end of the file: `head -c-2 clear_wrapped > clear`
+5. Mark `clear` as execubable" `chmod +x clear`
