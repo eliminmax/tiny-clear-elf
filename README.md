@@ -7,7 +7,7 @@
 \___________________________________________/
 ```
 
-The goal of this project is to create the smallest possible ELF executable that clears the screen, for all architectures that are officially supported by Debian GNU/Linux Bullseye. I made each of the 8 unique binaries by hand in [hed](/fr0zn/hed), a minimalist vim-inspired hex editor.
+The goal of this project is to create the smallest possible ELF executable that clears the screen, for all architectures that are officially supported by Debian GNU/Linux Bookworm. I made each of the 8 unique binaries by hand in [hed](/fr0zn/hed), a minimalist vim-inspired hex editor.
 
 ## How it works
 
