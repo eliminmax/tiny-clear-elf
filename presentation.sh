@@ -37,7 +37,7 @@ heading() {
 }
 
 bash_clear() {
-    # why not use one of the 8-9 different clear commands I'm presenting? I don't want to have to choose which one
+    # why not use one of the 9-10 different clear commands I'm presenting? I don't want to have to choose which one
     # to use.
     printf '\e[H\e[J\e[3J'
 }
@@ -46,6 +46,10 @@ arch_specific_logo() {
     cat logo
     printf '\e[H'
     figlet -f slant "$architecture" | sed $'s/^/\e[48G/'
+}
+
+wait_for_eof() {
+    cat >/dev/null
 }
 
 bash_clear
@@ -61,9 +65,7 @@ $(printf '\e[m')
 This is my presentation of the Tiny Clear Elf series of executables
 EOF
 
-read -s
-
-cat >/dev/null
+wait_for_eof
 
 
 for tiny_clear_elf in */clear; do
@@ -101,7 +103,7 @@ for tiny_clear_elf in */clear; do
 
     read -s
 
-    cat >/dev/null
+    wait_for_eof
 
     "$tiny_clear_elf"
 
