@@ -79,13 +79,14 @@ for tiny_clear_elf in */clear; do
         mips*) rasm2_arch=mips endianness=little ;;
         ppc64el) rasm2_arch=ppc endianness=little ;;
         s390x) rasm2_arch=s390 endianness=big ;;
+        riscv64) rasm2_arch=riscv endianness=little ;;
     esac
 
 
     # set some variables that depend on whether it's 64 or 32 bits by parsing the elf file itself
     case "$(head -c5 "$tiny_clear_elf" | tail -c1)" in
         $'\x01') bits=32; ehdr_size=52; phdr_size=32  ;;
-        $'\x02') bits=64; ehdr_size=64; phdr_size=52 ;;
+        $'\x02') bits=64; ehdr_size=64; phdr_size=56 ;;
         *) printf 'ERROR: invalid value in elf header.\n' >&2 ; exit 1;;
     esac
 
