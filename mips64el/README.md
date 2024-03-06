@@ -148,7 +148,7 @@ I'm using the same technique I hacked together for the mipsel architecture, but 
 as -o clear.o clear.S
 # extract
 objcopy --only-section .text -O binary clear.o clear.unwrapped
-# extracted binary will have 2 trailing bytes to discard
+# extracted binary will have 10 trailing bytes to discard
 head -c-10 clear.unwrapped > clear
 # mark clear as executable
 chmod +x clear

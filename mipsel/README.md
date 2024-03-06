@@ -147,7 +147,7 @@ I found it particularly hard to get the mipsel version of binutils to cooperate 
 as -o clear.o clear.S
 # extract
 objcopy --only-section .text -O binary clear.o clear.unwrapped
-# extracted binary will have 2 trailing bytes to discard
+# extracted binary will have 14 trailing bytes to discard
 head -c-14 clear.unwrapped > clear
 # mark clear as executable
 chmod +x clear
