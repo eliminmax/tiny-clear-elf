@@ -1,6 +1,4 @@
-# armel/armhf tiny_clear_elf `clear`
-
-**Note about architecture:** `armhf` and `armel` are not technically separate architectures, but `armhf` executables are compiled for use with **h**ardware **f**loating-point support, which not all 32-bit arm hardware has. I am copying Debian's approach to ARM, and treating them as separate architectures, but because I am not doing any floating-point calculations in this simple executable, there's no real difference between them.
+# armhf tiny_clear_elf `clear`
 
 ## Hexdump of the executable
 
@@ -8,14 +6,13 @@
 
 ```xxd
 00000000: 7f45 4c46 0101 0100 0000 0000 0000 0000  .ELF............
-00000010: 0200 2800 0100 0000 5400 0200 3400 0000  ..(.....T...4...
+00000010: 0200 2800 0100 0000 5500 0200 3400 0000  ..(.....U...4...
 00000020: 0000 0000 0000 0000 3400 2000 0100 0000  ........4. .....
 00000030: 0000 0000 0100 0000 0000 0000 0000 0200  ................
-00000040: 0000 0200 8200 0000 8200 0000 0500 0000  ................
-00000050: 0200 0000 0470 a0e3 0100 a0e3 7810 00e3  .....p......x...
-00000060: 0210 40e3 0a20 a0e3 0000 00ef 0170 a0e3  ..@.. .......p..
-00000070: 0000 a0e3 0000 00ef 1b5b 481b 5b4a 1b5b  .........[H.[J.[
-00000080: 334a                                     3J
+00000040: 0000 0000 7200 0000 7200 0000 0500 0000  ....r...r.......
+00000050: 0200 0000 0427 0120 6821 c0f2 0201 0a22  .....'. h!....."
+00000060: 00df 0127 0020 00df 1b5b 481b 5b4a 1b5b  ...'. ...[H.[J.[
+00000070: 334a                                     3J
 ```
 
 ## Breakdown
@@ -57,8 +54,8 @@ Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry 
     # EV_CURRENT - the only valid value
     .4byte 0x1
   # e_entry
-    # The virtual memory to transfer control at. The file is loaded into memory address 0x20000, and the code starts 0x54 bytes into the file
-    .4byte 0x20054
+    # The virtual memory to transfer control at. The file is loaded into memory address 0x20000, and the code starts 0x54 bytes into the file. Adding 1 starts it in thumb mode.
+    .4byte 0x20055
   # e_phoff
     # the offset from the beginning of the file to the program header table
     .4byte 0x34
@@ -98,9 +95,9 @@ Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry 
     # p_paddr - load this segment from physical address 0 in file
     .4byte 0x0
     # p_filesz - size (in bytes) of the segment in the file
-    .4byte 0x82
+    .4byte 0x72
     # p_memsz - size (in bytes) of memory to load the segment into
-    .4byte 0x82
+    .4byte 0x72
     # p_flags - segment permissions - PF_X + PF_R (0x1 + 0x100) - readable and executable
     .4byte 0x5
     # p_align - segment alignment - segment addresses must be aligned to multiples of this value
@@ -109,27 +106,27 @@ Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry 
 # The actual code
   # first syscall: write(1, 0x20078, 10)
     # On 32-bit arm systems, write is syscall 4.
-    mov r7, 0x4
+    mov r7, #0x4
     # STDOUT is file descriptor #1
-    mov r0, 0x1
+    mov r0, #0x1
     # Because each instruction is exactly 32 bits long,
     # there's not enough room to set all 32 bits with 1
     # `mov` command, but `mov` zeros out the bits not explicitly set.
-    # The solution I'm using is to set the lower bits with `movw` and the upper with `movt`.
-      # set the lower bits to 0x0078
-      movw r1, 0x78
+    # The solution I'm using is to set the lower bits with `mov` and the upper with `movt`.
+      # set the lower bits to 0x0068
+      mov r1, #0x68
       # set the upper bits to 0x0002
-      movt r1, 0x2
-      # thus, the value of r1 is set to 0x20078 - the memory address of the data to print.
+      movt r1, #0x2
+      # thus, the value of r1 is set to 0x20068 - the memory address of the data to print.
     # Write 10 bytes of data
-    mov r2, 0xa
+    mov r2, #0xa
     # supervisor call 0 is equivalent to amd64's syscall and i386's int 0x80
     svc 0x0
   # Second syscall: exit(0)
     # on 32-bit arm systems, exit is syscall 1.
-    mov r7, 0x1
+    mov r7, #0x1
     # error code 0 - no error
-    mov r0, 0x0
+    mov r0, #0x0
     # supervisor call 0
     svc 0x0
 
@@ -142,14 +139,15 @@ Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry 
 
 #### Reassembly
 
-To re-assemble the disassembly, you need to first assemble it with a 32-bit ARM version of the GNU assembler (`gas`, or just `as`). The problem is that it adds its own ELF header and program and section tables, so you then need to extract the actual file out from its output.
+To re-assemble the disassembly, you need to first assemble it with a 32-bit ARM version of the GNU assembler (`gas`, or just `as`) and linker (`ld`), as well as `objcopy`. All of these are part of GNU binutils. The problem is that it adds its own ELF header and program and section tables, so you then need to extract the actual file out from its output.
+
+I used the versions from Debian Bookworm's `binutils-arm-linux-gnueabihf` package.
 
 If you save the disassembly to `clear.S`, you'd need to do the following to reassemble it:
 
-
 ```sh
 # assemble
-as -o clear.o clear.S
+as -mthumb -o clear.o clear.S
 # link
 ld -o clear.wrapped clear.o
 # extract
