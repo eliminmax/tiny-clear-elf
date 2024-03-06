@@ -1,4 +1,4 @@
-# armhf tiny_clear_elf `clear`
+# armel tiny_clear_elf `clear`
 
 This is a valid executable for `armel` and `armhf`.
 
