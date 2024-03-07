@@ -127,7 +127,7 @@ for tiny_clear_elf in */clear; do
            'amd64') rasm2_arch=x86   endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 ;;
             'i386') rasm2_arch=x86   endianness=little rasm2_bits=32 ehdr_size=52 phdr_size=32 ;;
            'armhf') rasm2_arch=arm   endianness=little rasm2_bits=16 ehdr_size=52 phdr_size=32 ;;
-           'armel') rasm2_arch=arm   endianness=little rasm2_bits=32 ehdr_size=52 phdr_size=32 ;;
+           'armel') rasm2_arch=arm   endianness=little rasm2_bits=16 ehdr_size=52 phdr_size=32 ;;
            'arm64') rasm2_arch=arm   endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 ;;
           'mipsel') rasm2_arch=mips  endianness=little rasm2_bits=32 ehdr_size=52 phdr_size=32 ;;
         'mips64el') rasm2_arch=mips  endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 ;;
