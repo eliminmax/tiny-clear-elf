@@ -63,7 +63,7 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     .8byte 0x40
   # e_shoff
     # the offset from the beginning of the file to the section header table - zero, as there is no section header table
-    .4byte 0x0
+    .8byte 0x0
   # e_flags
     # processor-specific flags. Not sure if this is needed, but it can't hurt
     # 0x8------- = mips64r2
@@ -91,6 +91,8 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
   # Program header entry
     # p_type - PT_LOAD (1) - a loadable program segment
     .4byte 0x1
+    # p_flags - segment permissions - PF_X + PF_R (0x1 + 0x100) - readable and executable
+    .4byte 0x5
     # p_offset - offset (in bytes) of start of segment in file
     .8byte 0x0
     # p_vaddr - load this segment into memory at the address 0x10000
@@ -101,8 +103,6 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     .8byte 0xa6
     # p_memsz - size (in bytes) of memory to load the segment into
     .8byte 0xa6
-    # p_flags - segment permissions - PF_X + PF_R (0x1 + 0x100) - readable and executable
-    .8byte 0x5
     # p_align - segment alignment - segment addresses must be aligned to multiples of this value
     .8byte 0x2
 
