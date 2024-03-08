@@ -33,13 +33,13 @@ The general-purpose registers can be referred to either in numeric form (i.e. `$
 
 I'm including a tiny subset of the rows from the table in the page linked above. Follow the link for the full table.
 
-Number       | Name           | Comments
--------------|----------------|-------------------
-`$0`         | `$zero`, `$r0` | Always zero
-`$2`, `$3`   | `$v0`, `$v1`   | First and second return values, respectively
-`$4`…`$7`    | `$a0`…`$a3`    | First four arguments to functions
-`$8`… `$15`  | `$t0`…`$t7`    | Temporary registers
-`$24`…`$25`  | `$t8`…`$t9`    | More temporary registers
+|Number       | Name           | Comments|
+|-------------|----------------|-------------------|
+|`$0`         | `$zero`, `$r0` | Always zero|
+|`$2`, `$3`   | `$v0`, `$v1`   | First and second return values, respectively|
+|`$4`…`$7`    | `$a0`…`$a3`    | First four arguments to functions|
+|`$8`… `$15`  | `$t0`…`$t7`    | Temporary registers|
+|`$24`…`$25`  | `$t8`…`$t9`    | More temporary registers|
 
 #### Notes
 
@@ -73,9 +73,9 @@ add $t7, $t8, $t9
 
 ##### Binary form
 
-opcode | rs     | rt     | rd     | shift  | funct
--------|--------|--------|--------|--------|-------
-6 bits | 5 bits | 5 bits | 5 bits | 5 bits | 6 bits
+|opcode | rs     | rt     | rd     | shift  | funct|
+|-------|--------|--------|--------|--------|-------|
+|6 bits | 5 bits | 5 bits | 5 bits | 5 bits | 6 bits|
 
 Multiple operations can share a single opcode. When they do, the funct field is used to diffrentiate them. The *Instruction Formats* page linked above uses the following example:
 
@@ -91,10 +91,10 @@ The above `add` example would be `03197820` in hex, or in raw binary:
 
 Breaking that down into its individual fields
 
-<b></b>| opcode   | rs      | rt      | rd      | shift   | funct
--------|----------|---------|---------|---------|---------|---------
-Binary | `000000` | `11000` | `11001` | `01111` | `00000` | `100000`
-Dec    | 0        | 24      | 25      | 15      | 0       | 32
+|        | opcode   | rs      | rt      | rd      | shift   | funct    |
+|--------|----------|---------|---------|---------|---------|----------|
+| Binary | `000000` | `11000` | `11001` | `01111` | `00000` | `100000` |
+| Dec    | 0        | 24      | 25      | 15      | 0       | 32       |
 
 #### I Instructions
 
@@ -122,9 +122,9 @@ addi $t7, 0x20($t8)
 
 ##### Binary form
 
-opcode | rs     | rt     | IMM
--------|--------|--------|---------
-6 bits | 5 bits | 5 bits | 16 bits
+| opcode | rs     | rt     | IMM     |
+|--------|--------|--------|---------|
+| 6 bits | 5 bits | 5 bits | 16 bits |
 
 The above `addi` example would be `230f0020` in hex, or in raw binary:
 
@@ -136,9 +136,9 @@ The above `addi` example would be `230f0020` in hex, or in raw binary:
 
 Not going to go into as much detail here - it's not relevant to this project, and the *Instruction Formats* page linked above is a better general-purpose reference anyway.
 
-Opcode | Pseudo-Address
--------|----------------
-6 bits | 26 bit
+| Opcode | Pseudo-Address |
+|--------|----------------|
+| 6 bits | 26 bit         |
 
 The *Instruction Formats* page describes the Pseudo-Address field as follows:
 

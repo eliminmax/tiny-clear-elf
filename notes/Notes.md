@@ -60,24 +60,24 @@ I figured that I'd start with `x86_64` assembly, as it's the native format for t
 <p>Using the first table on the <a href="https://wiki.osdev.org/CPU_Registers_x86-64">OSDev.org wiki page on x86_64 CPU Registers</a>, as a base, I used the Netwide Assembler to get their values</p>
 </details>
 
-64-bit name | 64-bit value | 32-bit name | 32-bit value | 16-bit name | 16-bit value | 8 high bits of lower 16 bits name | 8 high bits of lower 16 bits value | 8-bit name | 8-bit value | Description
-------------|--------------|-------------|--------------|-------------|--------------|-----------------------------------|------------------------------------|------------|-------------|-------------------------------------------
-RAX         | `48 b8`      | EAX         | `b8`         | AX          | `66 b8`      | AH                                | `b4`                               | AL         | `b0`        | Accumulator
-RBX         | `48 bb`      | EBX         | `bb`         | BX          | `66 bb`      | BH                                | `b7`                               | BL         | `b3`        | Base
-RCX         | `48 b9`      | ECX         | `b9`         | CX          | `66 b9`      | CH                                | `b5`                               | CL         | `b1`        | Counter
-RDX         | `48 ba`      | EDX         | `ba`         | DX          | `66 ba`      | DH                                | `b6`                               | DL         | `b2`        | Data (commonly extends the A register)
-RSI         | `48 be`      | ESI         | `be`         | SI          | `66 be`      | N/A                               | N/A                                | SIL        | `40 b6`     | Source index for string operations
-RDI         | `48 bf`      | EDI         | `bf`         | DI          | `66 bf`      | N/A                               | N/A                                | DIL        | `40 b7`     | Destination index for string operations
-RSP         | `48 bc`      | ESP         | `bc`         | SP          | `66 bc`      | N/A                               | N/A                                | SPL        | `40 b4`     | Stack Pointer
-RBP         | `48 bd`      | EBP         | `bd`         | BP          | `66 bd`      | N/A                               | N/A                                | BPL        | `40 b5`     | Base Pointer (meant for stack frames)
-R8          | `49 b8`      | R8D         | `41 b8`      | R8W         | `66 41 b8`   | N/A                               | N/A                                | R8B        | `41 b0`     | General purpose
-R9          | `49 b9`      | R9D         | `41 b9`      | R9W         | `66 41 b9`   | N/A                               | N/A                                | R9B        | `41 b1`     | General purpose
-R10         | `49 ba`      | R10D        | `41 ba`      | R10W        | `66 41 ba`   | N/A                               | N/A                                | R10B       | `41 b2`     | General purpose
-R11         | `49 bb`      | R11D        | `41 bb`      | R11W        | `66 41 bb`   | N/A                               | N/A                                | R11B       | `41 b3`     | General purpose
-R12         | `49 bc`      | R12D        | `41 bc`      | R12W        | `66 41 bc`   | N/A                               | N/A                                | R12B       | `41 b4`     | General purpose
-R13         | `49 bd`      | R13D        | `41 bd`      | R13W        | `66 41 bd`   | N/A                               | N/A                                | R13B       | `41 b5`     | General purpose
-R14         | `49 be`      | R14D        | `41 be`      | R14W        | `66 41 be`   | N/A                               | N/A                                | R14B       | `41 b6`     | General purpose
-R15         | `49 bf`      | R15D        | `41 bf`      | R15W        | `66 41 bf`   | N/A                               | N/A                                | R15B       | `41 b7`     | General purpose
+| 64-bit name | 64-bit value | 32-bit name | 32-bit value | 16-bit name | 16-bit value | 8 high bits of lower 16 bits name | 8 high bits of lower 16 bits value | 8-bit name | 8-bit value | Description                             |
+|-------------|--------------|-------------|--------------|-------------|--------------|-----------------------------------|------------------------------------|------------|-------------|-----------------------------------------|
+| RAX         | `48 b8`      | EAX         | `b8`         | AX          | `66 b8`      | AH                                | `b4`                               | AL         | `b0`        | Accumulator                             |
+| RBX         | `48 bb`      | EBX         | `bb`         | BX          | `66 bb`      | BH                                | `b7`                               | BL         | `b3`        | Base                                    |
+| RCX         | `48 b9`      | ECX         | `b9`         | CX          | `66 b9`      | CH                                | `b5`                               | CL         | `b1`        | Counter                                 |
+| RDX         | `48 ba`      | EDX         | `ba`         | DX          | `66 ba`      | DH                                | `b6`                               | DL         | `b2`        | Data (commonly extends the A register)  |
+| RSI         | `48 be`      | ESI         | `be`         | SI          | `66 be`      | N/A                               | N/A                                | SIL        | `40 b6`     | Source index for string operations      |
+| RDI         | `48 bf`      | EDI         | `bf`         | DI          | `66 bf`      | N/A                               | N/A                                | DIL        | `40 b7`     | Destination index for string operations |
+| RSP         | `48 bc`      | ESP         | `bc`         | SP          | `66 bc`      | N/A                               | N/A                                | SPL        | `40 b4`     | Stack Pointer                           |
+| RBP         | `48 bd`      | EBP         | `bd`         | BP          | `66 bd`      | N/A                               | N/A                                | BPL        | `40 b5`     | Base Pointer (meant for stack frames)   |
+| R8          | `49 b8`      | R8D         | `41 b8`      | R8W         | `66 41 b8`   | N/A                               | N/A                                | R8B        | `41 b0`     | General purpose                         |
+| R9          | `49 b9`      | R9D         | `41 b9`      | R9W         | `66 41 b9`   | N/A                               | N/A                                | R9B        | `41 b1`     | General purpose                         |
+| R10         | `49 ba`      | R10D        | `41 ba`      | R10W        | `66 41 ba`   | N/A                               | N/A                                | R10B       | `41 b2`     | General purpose                         |
+| R11         | `49 bb`      | R11D        | `41 bb`      | R11W        | `66 41 bb`   | N/A                               | N/A                                | R11B       | `41 b3`     | General purpose                         |
+| R12         | `49 bc`      | R12D        | `41 bc`      | R12W        | `66 41 bc`   | N/A                               | N/A                                | R12B       | `41 b4`     | General purpose                         |
+| R13         | `49 bd`      | R13D        | `41 bd`      | R13W        | `66 41 bd`   | N/A                               | N/A                                | R13B       | `41 b5`     | General purpose                         |
+| R14         | `49 be`      | R14D        | `41 be`      | R14W        | `66 41 be`   | N/A                               | N/A                                | R14B       | `41 b6`     | General purpose                         |
+| R15         | `49 bf`      | R15D        | `41 bf`      | R15W        | `66 41 bf`   | N/A                               | N/A                                | R15B       | `41 b7`     | General purpose                         |
 
 When setting 64-bit registers' 32-bit equivalents, the higher 32-bits are zeroed out automatically. Thus, `b8 01 00 00 00` has the same effect as `48 b8 01 00 00 00 00 00 00 00`, in half the bytes.
 *(Incidentally, this caused me some trouble creating the above table, as the Netwide Assembler is smart enough to assemble* `mov rax,0` *as* `b8 00 00 00 00`, *and as I couldn't find the hex identifiers of the registers online,
@@ -96,16 +96,16 @@ On my primary system, running Pop!_OS 22.04, the full list of syscalls' numeric 
 
 ### registers
 
- 32-bit value | 16-bit name | 16-bit value | 8 high bits of lower 16 bits name | 8 high bits of lower 16 bits value | 8-bit name | 8-bit value | Description
---------------|-------------|--------------|-----------------------------------|------------------------------------|------------|-------------|-------------------------------------------
- `b8`         | AX          | `66 b8`      | AH                                | `b4`                               | AL         | `b0`        | Accumulator
- `bb`         | BX          | `66 bb`      | BH                                | `b7`                               | BL         | `b3`        | Base
- `b9`         | CX          | `66 b9`      | CH                                | `b5`                               | CL         | `b1`        | Counter
- `ba`         | DX          | `66 ba`      | DH                                | `b6`                               | DL         | `b2`        | Data (commonly extends the A register)
- `be`         | SI          | `66 be`      | N/A                               | N/A                                | SIL        | `40 b6`     | Source index for string operations
- `bf`         | DI          | `66 bf`      | N/A                               | N/A                                | DIL        | `40 b7`     | Destination index for string operations
- `bc`         | SP          | `66 bc`      | N/A                               | N/A                                | SPL        | `40 b4`     | Stack Pointer
- `bd`         | BP          | `66 bd`      | N/A                               | N/A                                | BPL        | `40 b5`     | Base Pointer (meant for stack frames)
+| 32-bit value | 16-bit name | 16-bit value | 8 high bits of lower 16 bits name | 8 high bits of lower 16 bits value | 8-bit name | 8-bit value | Description                             |
+|--------------|-------------|--------------|-----------------------------------|------------------------------------|------------|-------------|-----------------------------------------|
+| `b8`         | AX          | `66 b8`      | AH                                | `b4`                               | AL         | `b0`        | Accumulator                             |
+| `bb`         | BX          | `66 bb`      | BH                                | `b7`                               | BL         | `b3`        | Base                                    |
+| `b9`         | CX          | `66 b9`      | CH                                | `b5`                               | CL         | `b1`        | Counter                                 |
+| `ba`         | DX          | `66 ba`      | DH                                | `b6`                               | DL         | `b2`        | Data (commonly extends the A register)  |
+| `be`         | SI          | `66 be`      | N/A                               | N/A                                | SIL        | `40 b6`     | Source index for string operations      |
+| `bf`         | DI          | `66 bf`      | N/A                               | N/A                                | DIL        | `40 b7`     | Destination index for string operations |
+| `bc`         | SP          | `66 bc`      | N/A                               | N/A                                | SPL        | `40 b4`     | Stack Pointer                           |
+| `bd`         | BP          | `66 bd`      | N/A                               | N/A                                | BPL        | `40 b5`     | Base Pointer (meant for stack frames)   |
 
 This is a subset of the registers available in x86_64.
 

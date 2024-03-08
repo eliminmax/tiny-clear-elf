@@ -61,45 +61,45 @@ Here's the structure of both the `Elf32_Ehdr` and the `Elf64_Ehdr`, with each fi
 
 The ELF header is a struct containing the following data:
 
-field         | type (in `elf.h`)         | effective type       | description
---------------|---------------------------|----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-`e_ident`     | unsigned char[E_NIDENT]   | unsigned char[16]    | info about the ELF file
-`e_type`      | ElfNN_Half                | unsigned 16-bit int  | type of ELF file: `ET_NONE` (0) for unknown, `ET_REL` (1) for relocatable, `ET_EXEC` (2) for an executable, `ET_DYN` (3) for a shared object, or `ET_CORE` (4) for a core file
-`e_machine`   | ElfNN_Half                | unsigned 16-bit int  | target CPU architecture
-`e_version`   | ElfNN_Word                | unsigned 32-bit int  | file version: `EV_NONE` (0) for invalid version, `EV_CURRENT` (1) for current version
-`e_entry`     | ElfNN_Addr\*              | unsigned N-bit int\* | virtual address to transfer control at (0 if file has no entry point)
-`e_phoff`     | ElfNN_Off\*               | unsigned N-bit int\* | file offset for program header table in bytes (0 if file has no program header table)
-`e_shoff`     | ElfNN_Off\*               | unsigned N-bit int\* | file offset for section header table in bytes (0 if file has no section header table)
-`e_flags`     | ElfNN_Word                | unsigned 32-bit int  | processor-specific flags, currently none are defined
-`e_ehsize`    | ElfNN_Half                | unsigned 16-bit int  | size of the elf header in bytes
-`e_phentsize` | ElfNN_Half                | unsigned 16-bit int  | size of an entry in the program header table in bytes
-`e_phnum`     | ElfNN_Half                | unsigned 16-bit int  | number of entries in the program header table
-`e_shentsize` | ElfNN_Half                | unsigned 16-bit int  | size of an entry in the section header table in bytes
-`e_shnum`     | ElfNN_Half                | unsigned 16-bit int  | number of entries in the section header table
-`e_shstrndx`  | ElfNN_Half                | unsigned 16-bit int  | index of section header table entry names, or `0xffff` if it would be larger than `0xff00`. If no section header name string table exists, it is set to `SHN_UNDEF` (0)
+| field         | type (in `elf.h`)       | effective type       | description                                                                                                                                                                    |
+|---------------|-------------------------|----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `e_ident`     | unsigned char[E_NIDENT] | unsigned char[16]    | info about the ELF file                                                                                                                                                        |
+| `e_type`      | ElfNN_Half              | unsigned 16-bit int  | type of ELF file: `ET_NONE` (0) for unknown, `ET_REL` (1) for relocatable, `ET_EXEC` (2) for an executable, `ET_DYN` (3) for a shared object, or `ET_CORE` (4) for a core file |
+| `e_machine`   | ElfNN_Half              | unsigned 16-bit int  | target CPU architecture                                                                                                                                                        |
+| `e_version`   | ElfNN_Word              | unsigned 32-bit int  | file version: `EV_NONE` (0) for invalid version, `EV_CURRENT` (1) for current version                                                                                          |
+| `e_entry`     | ElfNN_Addr\*            | unsigned N-bit int\* | virtual address to transfer control at (0 if file has no entry point)                                                                                                          |
+| `e_phoff`     | ElfNN_Off\*             | unsigned N-bit int\* | file offset for program header table in bytes (0 if file has no program header table)                                                                                          |
+| `e_shoff`     | ElfNN_Off\*             | unsigned N-bit int\* | file offset for section header table in bytes (0 if file has no section header table)                                                                                          |
+| `e_flags`     | ElfNN_Word              | unsigned 32-bit int  | processor-specific flags, currently none are defined                                                                                                                           |
+| `e_ehsize`    | ElfNN_Half              | unsigned 16-bit int  | size of the elf header in bytes                                                                                                                                                |
+| `e_phentsize` | ElfNN_Half              | unsigned 16-bit int  | size of an entry in the program header table in bytes                                                                                                                          |
+| `e_phnum`     | ElfNN_Half              | unsigned 16-bit int  | number of entries in the program header table                                                                                                                                  |
+| `e_shentsize` | ElfNN_Half              | unsigned 16-bit int  | size of an entry in the section header table in bytes                                                                                                                          |
+| `e_shnum`     | ElfNN_Half              | unsigned 16-bit int  | number of entries in the section header table                                                                                                                                  |
+| `e_shstrndx`  | ElfNN_Half              | unsigned 16-bit int  | index of section header table entry names, or `0xffff` if it would be larger than `0xff00`. If no section header name string table exists, it is set to `SHN_UNDEF` (0)        |
 
 \* `elf.h` defines both `Elf32_Addr` and `Elf32_Off` as `uint32_t`, and both `Elf64_Addr` and `Elf64_Off` as `uint64_t`
 
 ### `e_ident` byte-by-byte
 
-byte index | field name      | description
------------|-----------------|-------------
-`0`        | `EI_MAG0`       | 1st byte of the ELF magic number - its value must be set to `0x7f` (non-printable)
-`1`        | `EI_MAG1`       | 2nd byte of the ELF magic number - its value must be set to `0x45` ('`E`')
-`2`        | `EI_MAG2`       | 3rd byte of the ELF magic number - its value must be set to `0x4c` ('`L`')
-`3`        | `EI_MAG3`       | 4th byte of the ELF magic number - its value must be set to `0x46` ('`F`')
-`4`        | `EI_CLASS`      | this ELF file - `ELFCLASSNONE` (0) is invalid, `ELFCLASS32` (1) is 32-bit, and `ELFCLASS64` (2) is 64-bit
-`5`        | `EI_DATA`       | data encoding - `ELFDATANONE` (0) is invalid, `ELFDATA2LSB` (1) is little-endian, `ELFDATA2MSB` (2) is big-endian
-`6`        | `EI_VERSION`    | ELF version - must be set to `EV_CURRENT` (1)
-`7`        | `EI_OSABI`      | ABI to target, `ELFOSABI_NONE` (0) is almost always the right choice. See manpage `ELF(5)` for other values
-`8`        | `EI_ABIVERSION` | Which ABI version to target, in case the targeted ABI has incompatible versions. Interpretation is dependent on value of `EI_OSABI`
-`9`        |                 | Currently unused, should be set to `0x00`
-`a`        |                 | Currently unused, should be set to `0x00`
-`b`        |                 | Currently unused, should be set to `0x00`
-`c`        |                 | Currently unused, should be set to `0x00`
-`d`        |                 | Currently unused, should be set to `0x00`
-`e`        |                 | Currently unused, should be set to `0x00`
-`f`        |                 | Currently unused, should be set to `0x00`
+| byte index | field name      | description                                                                                                                         |
+|------------|-----------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| `0`        | `EI_MAG0`       | 1st byte of the ELF magic number - its value must be set to `0x7f` (non-printable)                                                  |
+| `1`        | `EI_MAG1`       | 2nd byte of the ELF magic number - its value must be set to `0x45` ('`E`')                                                          |
+| `2`        | `EI_MAG2`       | 3rd byte of the ELF magic number - its value must be set to `0x4c` ('`L`')                                                          |
+| `3`        | `EI_MAG3`       | 4th byte of the ELF magic number - its value must be set to `0x46` ('`F`')                                                          |
+| `4`        | `EI_CLASS`      | this ELF file - `ELFCLASSNONE` (0) is invalid, `ELFCLASS32` (1) is 32-bit, and `ELFCLASS64` (2) is 64-bit                           |
+| `5`        | `EI_DATA`       | data encoding - `ELFDATANONE` (0) is invalid, `ELFDATA2LSB` (1) is little-endian, `ELFDATA2MSB` (2) is big-endian                   |
+| `6`        | `EI_VERSION`    | ELF version - must be set to `EV_CURRENT` (1)                                                                                       |
+| `7`        | `EI_OSABI`      | ABI to target, `ELFOSABI_NONE` (0) is almost always the right choice. See manpage `ELF(5)` for other values                         |
+| `8`        | `EI_ABIVERSION` | Which ABI version to target, in case the targeted ABI has incompatible versions. Interpretation is dependent on value of `EI_OSABI` |
+| `9`        |                 | Currently unused, should be set to `0x00`                                                                                           |
+| `a`        |                 | Currently unused, should be set to `0x00`                                                                                           |
+| `b`        |                 | Currently unused, should be set to `0x00`                                                                                           |
+| `c`        |                 | Currently unused, should be set to `0x00`                                                                                           |
+| `d`        |                 | Currently unused, should be set to `0x00`                                                                                           |
+| `e`        |                 | Currently unused, should be set to `0x00`                                                                                           |
+| `f`        |                 | Currently unused, should be set to `0x00`                                                                                           |
 
 ### Real-world example
 
@@ -240,28 +240,28 @@ Let's split that up, section by section:
 The Program header is a struct with 8 values within it, defining the location and properties of a segment within the program. The both the order and the size of the Program Header fields depend on whether the ELF file is 32-bit or 64-bit.
 
 ### Elf32_Phdr
-data       | bytes | type       | description
------------|-------|------------|----------------
-`p_type`   | 4     | Elf32_Word | Segment type
-`p_offset` | 4     | Elf32_Off  | Segment file offset
-`p_vaddr`  | 4     | Elf32_Addr | Segment virtual address
-`p_paddr`  | 4     | Elf32_Addr | Segment physical address
-`p_filesz` | 4     | Elf32_Word | Segment size in file
-`p_memsz`  | 4     | Elf32_Word | Segment size in memory
-`p_flags`  | 4     | Elf32_Word | Segment flags
-`p_align`  | 4     | Elf32_Word | Segment alignment
+| data       | bytes | type       | description              |
+|------------|-------|------------|--------------------------|
+| `p_type`   | 4     | Elf32_Word | Segment type             |
+| `p_offset` | 4     | Elf32_Off  | Segment file offset      |
+| `p_vaddr`  | 4     | Elf32_Addr | Segment virtual address  |
+| `p_paddr`  | 4     | Elf32_Addr | Segment physical address |
+| `p_filesz` | 4     | Elf32_Word | Segment size in file     |
+| `p_memsz`  | 4     | Elf32_Word | Segment size in memory   |
+| `p_flags`  | 4     | Elf32_Word | Segment flags            |
+| `p_align`  | 4     | Elf32_Word | Segment alignment        |
 
 ### Elf64_Phdr
-data       | bytes | type        | description
------------|-------|-------------|----------------
-`p_type`   | 4     | Elf64_Word  | Segment type
-`p_flags`  | 4     | Elf64_Word  | Segment flags
-`p_offset` | 8     | Elf64_Off   | Segment file offset
-`p_vaddr`  | 8     | Elf64_Addr  | Segment virtul address
-`p_paddr`  | 8     | Elf64_Addr  | Segment physical address
-`p_filesz` | 8     | Elf64_Xword | Segment Size in file
-`p_memsz`  | 8     | Elf64_Xword | Segment size in memory
-`p_align`  | 8     | Elf64_Xword | Segment alignment
+| data       | bytes | type        | description              |
+|------------|-------|-------------|--------------------------|
+| `p_type`   | 4     | Elf64_Word  | Segment type             |
+| `p_flags`  | 4     | Elf64_Word  | Segment flags            |
+| `p_offset` | 8     | Elf64_Off   | Segment file offset      |
+| `p_vaddr`  | 8     | Elf64_Addr  | Segment virtul address   |
+| `p_paddr`  | 8     | Elf64_Addr  | Segment physical address |
+| `p_filesz` | 8     | Elf64_Xword | Segment Size in file     |
+| `p_memsz`  | 8     | Elf64_Xword | Segment size in memory   |
+| `p_align`  | 8     | Elf64_Xword | Segment alignment        |
 
 ### Field values
 
