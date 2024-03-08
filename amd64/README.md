@@ -18,9 +18,13 @@
 000000a0: 4a                                       J
 ```
 
-## ASM
+## Breakdown
 
-I created the following NASM source that should assemble into a byte-for-byte copy of the AMD64 `clear` executable
+The file has 4 parts to it - the ELF header, the Program Header table, the code, and the data.
+
+Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry in the Program Header table is 56 bytes long. The string to print is 10 bytes long.
+
+### Disassembly
 
 ```asm
 BITS 64
@@ -102,8 +106,18 @@ BITS 64
                     ; load the error code from RDI - 0 means no error
 ; THE DATA
 db 0x1b,"[H",0x1b,"[J",0x1b,"[3J" ; this data is written to stdout by the first syscall.
-                                  ; it consists of 3 escape sequences:
-                                    ; \e[H moves the cursor to the first cell of the first row in the terminal.
-                                    ; \e[J clears everything from the cursor to the end of the screen
-                                    ; \e[3J clears the scrollback buffer
+```
+
+#### Reassembly
+
+You'll need to have the Netwide Assembler installed. I installed it with Debian Bookworm's `nasm` package.
+
+If you save the disassembly to `clear.asm`, you'll need to do the following to reassemble it:
+
+```sh
+# assemble
+nasm -fbin clear.asm -o clear
+
+# mark clear as executable
+chmod +x clear
 ```

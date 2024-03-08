@@ -1,4 +1,4 @@
-# arm64 tiny_clear_elf `clear`
+# arm64 tiny-clear-elf `clear`
 
 ## Hexdump of the executable
 
@@ -19,8 +19,6 @@
 ```
 
 ## Breakdown
-
-Unfortunately, NASM is only usable for the x86 architecture family, so I can't provide NASM source.
 
 The file has 4 parts to it - the ELF header, the Program Header table, the code, and the data.
 
@@ -142,20 +140,32 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
 
 #### Reassembly
 
-To re-assemble the disassembly, you need to first assemble it with a 64-bit ARM version of the GNU assembler (`gas`, or just `as`). The problem is that it adds its own ELF header and program and section tables, so you then need to extract the actual file out from its output.
+To re-assemble the disassembly, you need to first assemble it with a 64-bit ARM version of the GNU assembler (`gas`, or just `as`). The problem is that it adds its own ELF header, program, and section tables, so you then need to extract the actual file out from its output.
 
-If you save the disassembly to `clear.S`, you'd need to do the following to reassemble it:
+I used the versions from Debian Bookworm's `binutils-aarch64-linux-gnu` package.
 
+On `arm64` systems, one should instead use the `binutils` package, as the `binutils-aarch64-linux-gnu` package is meant for working with foreign binaries.
+
+If you save the disassembly to `clear.S`, you'll need to do the following to reassemble it:
 
 ```sh
+# On non-arm64 Debian systems with binutils-aarch64-linux-gnu installed, this will ensure
+# the appropriate binutils versions are first in the PATH.
+# On arm64 Debian systems, it's harmless.
+PATH="/usr/aarch64-linux-gnu/bin:$PATH"
+
 # assemble
 as -o clear.o clear.S
+
 # link
 ld -o clear.wrapped clear.o
+
 # extract
 objcopy -O binary clear.wrapped clear.unwrapped
+
 # extracted binary will have 2 trailing bytes to discard
 head -c-2 clear.unwrapped > clear
+
 # mark clear as executable
 chmod +x clear
 ```

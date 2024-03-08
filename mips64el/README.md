@@ -1,4 +1,4 @@
-# mips64el tiny_clear_elf `clear`
+# mips64el tiny-clear-elf `clear`
 
 ## Hexdump of the executable
 
@@ -27,6 +27,7 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
 ### Disassembly
 
 ```asm
+# mark as section .text for easier extraction
 .section .text
 # ELF ehdr
   # e_ident
@@ -135,21 +136,40 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
 # The escape sequences
   .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
 
-# Need 10 bytes of padding, so just copy the same value because why not
-  .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
+# Need 10 bytes of padding
+  .ascii "\xff""\xff""\xff""\xff""\xff""\xff""\xff""\xff""\xff""\xff"
 ```
 
 #### Reassembly
 
-I'm using the same technique I hacked together for the mipsel architecture, but this time, it has 10 bytes of padding, rather than 14.
+To re-assemble the disassembly, you need to first assemble it with a 64-bit MIPS little-endian version of the GNU assembler (`gas`, or just `as`) and linker (`ld`), as well as `objcopy`. All of these are part of GNU binutils. The problem is that it adds its own ELF header and program and section tables, so you then need to extract the actual file out from its output.
+
+I used the versions from Debian Bookworm's `binutils-mips64el-linux-gnuabi64` package.
+
+On `mips64el` systems, one should instead use the `binutils` package, as the `binutils-mips64el-linux-gnuabi64` package is meant for working with foreign binaries.
+
+If you save the disassembly to `clear.S`, you'll need to do the following to reassemble it:
+
+*I'm using the same technique I hacked together for the mipsel architecture, but this time, it has 10 bytes of padding, rather than 14.*
 
 ```sh
+# On non-mips64el Debian systems with binutils-mips64el-linux-gnuabi64 installed, this will ensure
+# the appropriate binutils versions are first in the PATH.
+# On mips64el Debian systems, it's probably harmless.
+PATH="/usr/mips64el-linux-gnuabi64/bin:$PATH"
+
 # assemble
-as -o clear.o clear.S
+as -EL -mabi=64 -march=mips64r2 -o clear.o clear.S
+# -EL ensures it's a little-endian binary
+# -march=mips64r2 instructs it to target the minimum version supported by Debian Bookworm
+# -mabi=64 instructs it to use the N64 Application Binary Interface
+
 # extract
 objcopy --only-section .text -O binary clear.o clear.unwrapped
+
 # extracted binary will have 10 trailing bytes to discard
 head -c-10 clear.unwrapped > clear
+
 # mark clear as executable
 chmod +x clear
 ```

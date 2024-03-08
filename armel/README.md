@@ -1,4 +1,4 @@
-# armel tiny_clear_elf `clear`
+# armel tiny-clear-elf `clear`
 
 This is a valid executable for `armel` and `armhf`.
 
@@ -125,9 +125,9 @@ Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry 
     # supervisor call 0
     svc 0x0
 
-; I'd normally not use any lables in these, but the ADR encoding used requires a label
-;   so that the assembler can calculate the offset the distance from the adr instruction to the label
-;   I'd prefer to just input an immediate (i.e. adr r1, #0x8, but that's invalid syntax)
+# I'd normally not use any lables in these, but the ADR encoding used requires a label
+#   so that the assembler can calculate the offset the distance from the adr instruction to the label
+#   I'd prefer to just input an immediate (i.e. adr r1, #0x8, but that's invalid syntax)
 ESCAPE_SEQ:
 # The escape sequences
   .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
@@ -138,24 +138,34 @@ ESCAPE_SEQ:
 
 #### Reassembly
 
-To re-assemble the disassembly, you need to first assemble it with a 32-bit ARM version of the GNU assembler (`gas`, or just `as`) and linker (`ld`), as well as `objcopy`. All of these are part of GNU binutils. The problem is that it adds its own ELF header and program and section tables, so you then need to extract the actual file out from its output.
+To re-assemble the disassembly, you need to first assemble it with a 32-bit ARM version of the GNU assembler (`gas`, or just `as`) and linker (`ld`), as well as `objcopy`. All of these are part of GNU binutils. The problem is that it adds its own ELF header, program, and section tables, so you then need to extract the actual file out from its output.
 
-I used the versions from Debian Bookworm's `binutils-arm-linux-gnueabihf` package.
+I used the versions from Debian Bookworm's `binutils-arm-linux-gnueabi` package.
 
-If you save the disassembly to `clear.S`, you'd need to do the following to reassemble it:
+On `armel` systems, one should instead use the `binutils` package, as the `binutils-armel-linux-gnu` package is meant for working with foreign binaries.
+
+If you save the disassembly to `clear.S`, you'll need to do the following to reassemble it:
 
 ```sh
+# On non-armel Debian systems with binutils-arm-linux-gnueabi installed, this will ensure
+# the appropriate binutils versions are first in the PATH.
+# On armel Debian systems, it's probably harmless.
+PATH="/usr/arm-linux-gnueabi/bin:$PATH"
+
 # assemble
 as -mthumb -march=armv5t -o clear.o clear.S
+# -mthumb instructs it to use Thumb instead of ARM instructions
+# -march=armv5t ensures that the instructions are valid on all Debian armel systems
+
 # link
 ld -o clear.wrapped clear.o
+
 # extract
 objcopy -O binary clear.wrapped clear.unwrapped
+
 # extracted binary will have 2 trailing bytes to discard
 head -c-2 clear.unwrapped > clear
+
 # mark clear as executable
 chmod +x clear
 ```
-
-* The `-mthumb` flag tells the assembler to assemble Thumb instead of ARM instructions.
-* The `-march=armv5t` flag ensures that the instructions are valid on all Debian `armel` systems.

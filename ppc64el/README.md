@@ -18,8 +18,11 @@
 000000a0: 5b4a 1b5b 334a                           [J.[3J
 ```
 
-## ASM
+## Breakdown
 
+The file has 4 parts to it - the ELF header, the Program Header table, the code, and the data.
+
+Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry in the Program Header table is 56 bytes long. The string to print is 10 bytes long.
 
 ```asm
 # ELF ehdr
@@ -129,10 +132,36 @@
 .2byte 0xffff
 ```
 
-### Reassembly
+#### Reassembly
 
-1. Copy the above assembly code into a file called `clear.S`.
-2. Using an powerpc64le version of GNU binutils, assemble it with `as clear.S -o clear.o`.
-3. Link it, outputting the `clear` binary, but omitting the binutils-provided headers: `ld clear.o --oformat binary -o clear_wrapped`
-4. Remove the padding bytes from the end of the file: `head -c-2 clear_wrapped > clear`
-5. Mark `clear` as execubable" `chmod +x clear`
+To re-assemble the disassembly, you need to first assemble it with a 64-bit PowerPC little-endian version of the GNU assembler (`gas`, or just `as`) and linker (`ld`), as well as `objcopy`. All of these are part of GNU binutils. The problem is that it adds its own ELF header and program and section tables, so you then need to extract the actual file out from its output.
+
+I used the versions from Debian Bookworm's `binutils-powerpc64le-linux-gnu` package.
+
+On `powerpc64le` systems, one should instead use the `binutils` package, as the `binutils-powerpc64le-linux-gnu` package is meant for working with foreign binaries.
+
+If you save the disassembly to `clear.S`, you'll need to do the following to reassemble it:
+
+```sh
+# On non-powerpc64le Debian systems with binutils-powerpc64le-linux-gnu installed, this will ensure
+# the appropriate binutils versions are first in the PATH.
+# On powerpc64le Debian systems, it's probably harmless.
+PATH="/usr/powerpc64le-linux-gnu/bin:$PATH"
+
+# assemble
+as -le -mpower8 -o clear.o clear.S
+# -le ensures it's a little-endian binary
+# -mpower8 instructs it to target the minimum version supported by Debian Bookworm
+
+# extract
+objcopy --only-section .text -O binary clear.o clear.unwrapped
+
+# link
+ld -o clear.wrapped clear.o
+
+# extracted binary will have 2 trailing bytes to discard
+head -c-2 clear.unwrapped > clear
+
+# mark clear as executable
+chmod +x clear
+```

@@ -1,4 +1,4 @@
-# mipsel tiny_clear_elf `clear`
+# mipsel tiny-clear-elf `clear`
 
 ## Hexdump of the executable
 
@@ -135,20 +135,39 @@ Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry 
   .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
 
 # Padding
-  .ascii "______________"
+  .ascii "\xff""\xff""\xff""\xff""\xff""\xff""\xff""\xff""\xff""\xff""\xff""\xff""\xff""\xff"
 ```
 
 #### Reassembly
 
-I found it particularly hard to get the mipsel version of binutils to cooperate - not only did it add its own header too, but it padded it out in a completely different way than it did on other architectures. I changed the assembly, attempted to create a custom linker script, and when that failed, wound up comping up with an even hackier solution than previous architectures. Behold:
+To re-assemble the disassembly, you need to first assemble it with a 32-bit MIPS little-endian version of the GNU assembler (`gas`, or just `as`) and linker (`ld`), as well as `objcopy`. All of these are part of GNU binutils. The problem is that it adds its own ELF header and program and section tables, so you then need to extract the actual file out from its output.
+
+I used the versions from Debian Bookworm's `binutils-mipsel-linux-gnu` package.
+
+On `armhf` systems, one should instead use the `binutils` package, as the `binutils-mipsel-linux-gnu` package is meant for working with foreign binaries.
+
+If you save the disassembly to `clear.S`, you'll need to do the following to reassemble it:
+
+*I found it particularly hard to get the mipsel version of binutils to cooperate - not only did it add its own header too, but it padded it out in a completely different way than it did on other architectures. I changed the assembly, attempted to create a custom linker script, and when that failed, wound up comping up with an even hackier solution than other architectures.*
 
 ```sh
+# On non-mipsel Debian systems with binutils-mipsel-linux-gnu installed, this will ensure
+# the appropriate binutils versions are first in the PATH.
+# On mipsel Debian systems, it's probably harmless.
+PATH="/usr/mipsel-linux-gnu/bin:$PATH"
+
 # assemble
-as -o clear.o clear.S
+as -EL -mabi=32 -march=mips32r2 -o clear.o clear.S
+# -EL ensures it's a little-endian binary
+# -march=mips32r2 instructs it to target the minimum version supported by Debian Bookworm
+# -mabi=32 instructs it to use the O32 Application Binary Interface
+
 # extract
 objcopy --only-section .text -O binary clear.o clear.unwrapped
+
 # extracted binary will have 14 trailing bytes to discard
 head -c-14 clear.unwrapped > clear
+
 # mark clear as executable
 chmod +x clear
 ```

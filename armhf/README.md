@@ -1,4 +1,4 @@
-# armhf tiny_clear_elf `clear`
+# armhf tiny-clear-elf `clear`
 
 This is a valid executable for `armel` and `armhf`.
 
@@ -125,9 +125,9 @@ Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry 
     # supervisor call 0
     svc 0x0
 
-; I'd normally not use any lables in these, but the ADR encoding used requires a label
-;   so that the assembler can calculate the offset the distance from the adr instruction to the label
-;   I'd prefer to just input an immediate (i.e. adr r1, #0x8, but that's invalid syntax)
+# I'd normally not use any lables in these, but the ADR encoding used requires a label
+#   so that the assembler can calculate the offset the distance from the adr instruction to the label
+#   I'd prefer to just input an immediate (i.e. adr r1, #0x8, but that's invalid syntax)
 ESCAPE_SEQ:
 # The escape sequences
   .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
@@ -142,17 +142,30 @@ To re-assemble the disassembly, you need to first assemble it with a 32-bit ARM 
 
 I used the versions from Debian Bookworm's `binutils-arm-linux-gnueabihf` package.
 
-If you save the disassembly to `clear.S`, you'd need to do the following to reassemble it:
+On `armhf` systems, one should instead use the `binutils` package, as the `binutils-arm-linux-gnueabihf` package is meant for working with foreign binaries.
+
+If you save the disassembly to `clear.S`, you'll need to do the following to reassemble it:
 
 ```sh
+# On non-armhf Debian systems with binutils-arm-linux-gnueabihf installed, this will ensure
+# the appropriate binutils versions are first in the PATH.
+# On armhf Debian systems, it's probably harmless.
+PATH="/usr/arm-linux-gnueabihf/bin:$PATH"
+
 # assemble
-as -mthumb -o clear.o clear.S
+as -mthumb -march=armv7-a -o clear.o clear.S
+# -mthumb instructs it to use Thumb instead of ARM instructions
+# -march=armv7-a ensures that the instructions are valid on all Debian armhf systems
+
 # link
 ld -o clear.wrapped clear.o
+
 # extract
 objcopy -O binary clear.wrapped clear.unwrapped
+
 # extracted binary will have 2 trailing bytes to discard
 head -c-2 clear.unwrapped > clear
+
 # mark clear as executable
 chmod +x clear
 ```
