@@ -39,16 +39,17 @@ The following information is collected from the glibc headers, Marcin Juszkiewic
 The following table contains the project-relevant information from 2 tables in the `SYSCALL(2)` man page and Marcin Juszkiewicz's table.
 I've adjusted the names of the various fields and architectures to improve clarity in this context, and better align with the terminology I've been using for this project overall.
 
- **Arch/ABI**   | **Instruction** | **System Call Register** | **arg1 register** | **arg2 register** | **arg3 register** | **`write` call** | **`exit` call**
-----------------|-----------------|--------------------------|-------------------|-------------------|-------------------|------------------|----------------
-`amd64`         | `syscall`       | `rax`                    | `rdi`             | `rsi`             | `rdx`             | `1`              | `60`
-`i386`          | `int $0x80`     | `eax`                    | `ebx`             | `ecx`             | `esi`             | `4`              | `1`
-`armel`/`armhf` | `swi 0x0`\*     | `r7`                     | `r0`              | `r1`              | `r2`              | `4`              | `1`
-`arm64`         | `svc #0`        | `w8`                     | `x0`              | `x1`              | `x2`              | `64`             | `93`
-`ppc64`\*\*     | `sc`            | `r0`                     | `r3`              | `r4`              | `r5`              | `4`              | `1`
-`s390x`         | `svc 0`\*\*\*   | `r1`                     | `r2`              | `r3`              | `r4`              | `4`              | `1`
-`mips`\*\*      | `syscall`       | `v0`                     | `a0`              | `a1`              | `a2`              | `4004`           | `4001`
-`mips64`\*\*    | `syscall`       | `v0`                     | `a0`              | `a1`              | `a2`              | `5001`           | `5058`
+| **Arch/ABI**    | **Instruction** | **System Call Register** | **arg1 register** | **arg2 register** | **arg3 register** | **`write` call** | **`exit` call** |
+|-----------------|-----------------|--------------------------|-------------------|-------------------|-------------------|------------------|-----------------|
+| `amd64`         | `syscall`       | `rax`                    | `rdi`             | `rsi`             | `rdx`             | `1`              | `60`            |
+| `i386`          | `int $0x80`     | `eax`                    | `ebx`             | `ecx`             | `esi`             | `4`              | `1`             |
+| `armel`/`armhf` | `swi 0x0`\*     | `r7`                     | `r0`              | `r1`              | `r2`              | `4`              | `1`             |
+| `arm64`         | `svc #0`        | `w8`                     | `x0`              | `x1`              | `x2`              | `64`             | `93`            |
+| `ppc64`\*\*     | `sc`            | `r0`                     | `r3`              | `r4`              | `r5`              | `4`              | `1`             |
+| `s390x`         | `svc 0`\*\*\*   | `r1`                     | `r2`              | `r3`              | `r4`              | `4`              | `1`             |
+| `mips`\*\*      | `syscall`       | `v0`                     | `a0`              | `a1`              | `a2`              | `4004`           | `4001`          |
+| `mips64`\*\*    | `syscall`       | `v0`                     | `a0`              | `a1`              | `a2`              | `5001`           | `5058`          |
+| `riscv64`       | `ecall`         | `a7`                     | `a0`              | `a1`              | `a2`              | `64`             | `93`            |
 
 \* *Note: I've seen online tutorials say to use `svc #0` here. In the `armel`/`armhf` instructions `swi 0x0` and `svc #0` both assemble to `000000ef`, so that should also work just fine.*
 
