@@ -98,14 +98,14 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     # p_paddr - load this segment from physical address 0 in file
     .8byte 0x0
     # p_filesz - size (in bytes) of the segment in the file
-    .8byte 0xa6
+    .8byte 0x9e
     # p_memsz - size (in bytes) of memory to load the segment into
-    .8byte 0xa6
+    .8byte 0x9e
     # p_align - segment alignment - segment addresses must be aligned to multiples of this value
     .8byte 0x2
 
 # The actual code
-  # first syscall: write(1, 0x1009c, 10)
+  # first syscall: write(1, 0x10094, 10)
     # On 64-bit riscv systems, write is syscall 64.
     # to set a register to an immediate value, use addi to add that immediate to the register x0
     # which is hard-wired to always contain a zero and save the result to the target regiser.
@@ -118,9 +118,9 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     # into the `li` pseudo-instruction, but I am not doing that here.
       # set a1 to 0x100000
       lui a1, 0x10
-      # set the lowest 12 bits to 0x9c
-      addi a1, a1, 0x9c
-      # thus, the value of a1 is set to 0x1009c - the memory address of the data to print.
+      # set the lowest 12 bits to 0x94
+      addi a1, a1, 0x94
+      # thus, the value of a1 is set to 0x10094 - the memory address of the data to print.
     # Write 10 bytes of data
     addi a2, x0, 0xa
     # riscv's system call instruction is ecall (previously known as scall)
@@ -157,8 +157,9 @@ If you save the disassembly to `clear.S`, you'll need to do the following to rea
 PATH="/usr/riscv64-linux-gnu/bin:$PATH"
 
 # assemble
-as -mabi=lp64d -mlittle-endian -o clear.o clear.S
+as -mabi=lp64d -march=rv64gc -mlittle-endian -o clear.o clear.S
 # -mlittle-endian ensures it's a little-endian binary
+# -march=rv64gc instructs it to target the minimum hardware version supported by Debian
 # -mabi=lp64d instructs it to target the minimum ABI version supported by Debian
 
 # link
