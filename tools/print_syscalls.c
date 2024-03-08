@@ -1,3 +1,9 @@
+/* This program prints the system call numbers for the syscalls used within
+ * the tiny-clear-elf project.
+ *
+ * By cross-compiling and running with qemu-user, it can make it faster than
+ * having to look it up in a table, like I did originally.
+ * */
 #include <unistd.h>
 #include <sys/syscall.h> 
 #include <stdio.h>

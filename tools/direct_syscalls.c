@@ -1,3 +1,7 @@
+/* This program, when compiled with -static -nostartfiles, is equivalent to
+ * a tiny-clear-elf program, in terms of syscalls used. It does not work on all
+ * platforms.
+ * */
 #include <unistd.h>
 #include <sys/syscall.h> 
 
