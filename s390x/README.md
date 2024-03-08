@@ -124,7 +124,7 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
 
 #### Reassembly
 
-To re-assemble the disassembly, you need to first assemble it with a 64-bit PowerPC little-endian version of the GNU assembler (`gas`, or just `as`) and linker (`ld`), as well as `objcopy`. All of these are part of GNU binutils. The problem is that it adds its own ELF header and program and section tables, so you then need to extract the actual file out from its output.
+To re-assemble the disassembly, you need to first assemble it with a 64-bit PowerPC little-endian version of the GNU assembler (`gas`, or just `as`), as well as `objcopy`. Both of these are part of GNU binutils. The problem is that it adds its own ELF header and program and section tables, so you then need to extract the actual file out from its output.
 
 I used the versions from Debian Bookworm's `binutils-powerpc64le-linux-gnu` package.
 
@@ -133,6 +133,7 @@ On `s390x` systems, one should instead use the `binutils` package, as the `binut
 If you save the disassembly to `clear.S`, you'll need to do the following to reassemble it:
 
 ```sh
+#!/bin/sh
 # On non-s390x Debian systems with binutils-s390x-linux-gnu installed, this will ensure
 # the appropriate binutils versions are first in the PATH.
 # On s390x Debian systems, it's probably harmless.
@@ -141,14 +142,8 @@ PATH="/usr/s390x-linux-gnu/bin:$PATH"
 # assemble
 as -o clear.o clear.S
 
-# extract
-objcopy --only-section .text -O binary clear.o clear.unwrapped
-
-# link
-ld -o clear.wrapped clear.o
-
-# extracted binary will have 2 trailing bytes to discard
-head -c-2 clear.unwrapped > clear
+# extract binary
+objcopy --only-section .text -O binary clear.o clear
 
 # mark clear as executable
 chmod +x clear
