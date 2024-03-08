@@ -144,11 +144,11 @@ To re-assemble the disassembly, you need to first assemble it with a 32-bit MIPS
 
 I used the versions from Debian Bookworm's `binutils-mipsel-linux-gnu` package.
 
-On `armhf` systems, one should instead use the `binutils` package, as the `binutils-mipsel-linux-gnu` package is meant for working with foreign binaries.
+On `mipsel` systems, one should instead use the `binutils` package, as the `binutils-mipsel-linux-gnu` package is meant for working with foreign binaries.
 
 If you save the disassembly to `clear.S`, you'll need to do the following to reassemble it:
 
-*I found it particularly hard to get the mipsel version of binutils to cooperate - not only did it add its own header too, but it padded it out in a completely different way than it did on other architectures. I changed the assembly, attempted to create a custom linker script, and when that failed, wound up comping up with an even hackier solution than other architectures.*
+*I found it particularly hard to get the mipsel version of binutils to cooperate - not only did it add its own header too, but it padded it out in a completely different way than it did on other architectures. I changed the assembly, attempted to create a custom linker script, and when that failed, wound up coming up with an even hackier solution than other architectures.*
 
 ```sh
 # On non-mipsel Debian systems with binutils-mipsel-linux-gnu installed, this will ensure
