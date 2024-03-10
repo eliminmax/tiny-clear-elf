@@ -139,7 +139,9 @@ If you save the disassembly to `clear.S`, you'll need to do the following to rea
 PATH="/usr/s390x-linux-gnu/bin:$PATH"
 
 # assemble
-as -o clear.o clear.S -no-pad-sections
+as -o clear.o clear.S -march=z196 -m64 -no-pad-sections
+# -m64 instructs the assembler to target the 64-bit ABI
+# -march=z196 instructs the assembler to target the minimum version supported by Debian
 
 # extract binary
 objcopy --only-section .text -O binary clear.o clear
