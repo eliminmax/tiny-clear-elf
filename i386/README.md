@@ -24,97 +24,130 @@ Given that this is a 32-bit ELF file, the ELF header is 32 bytes, and one entry 
 ### Disassembly
 
 ```asm
-BITS 32
-; ELF HEADER
-; the meanings of the values of each object in the header are from elf.h
-  ; e_ident
-    db 0x7F,"ELF" ; EI_MAG0, EI_MAG1, EI_MAG2, EI_MAG3: ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3 - the ELF magic number
-    db 1          ; EI_CLASS: 1 is ELFCLASS32 - meaning it's a 32-bit object
-    db 1          ; EI_DATA: 1 is ELFDATA2LSB - meaning that it's little-endian
-    db 1          ; EI_VERSION: 1 is EV_CURRENT - it is the only valid value
-    db 0          ; EI_OSABI: 0 is ELFOSABI_NONE - the generic SYSV ABI
-    db 0          ; EI_ABIVERSION: used to differentiate between incompatible ABI Versions; unused here
-    times 7 db 0  ; the remaining 7 bytes of the e_ident char array are unused and should be zeroed out
-  ; e_type
-    dw 2          ; ET_EXEC - Executable file
-  ; e_machine
-    dw 3          ; EM_386 - Intel 80386
-  ; e_version     ;
-    dd 1          ; value can only be EV_CURRENT (1)
-  ; e_entry
-    dd 0x20054    ; the virtual memory address to transfer control at
-                  ; because the beginning of the file is loaded to address 0x20000, and the actual instructions
-                  ; begin 0x54 (84) bytes into the file, this is the value to set it to
-  ; e_phoff
-    dd 52         ; the offset (in bytes) from the start of the file to the program header table
-                  ; because the program header table starts immediately after the elf header ends, this is set to
-                  ; 52, as that's the size of a 32-bit ELF header
-  ; e_shoff
-    dd 0          ; the offset (in bytes) from the start of the file to the section header table
-                  ; because there is no section header table, this is set to 0.
-  ; e_flags
-    dd 0          ; processor-specific flags, none are currently defined
-  ; e_ehsize
-    dw 52         ; the size of the ELF header, in bytes - 52 for 32-bit ELF files.
-  ; e_phentsize
-    dw 32         ; the size of an entry in the program header table, in bytes
-  ; e_phnum
-    dw 1          ; the number of entries in the program header table
-  ; e_shentsize
-    dw 0          ; the size of entries in the section header table - zero, as there is no section header table
-  ; e_shnum
-    dw 0          ; the number of entries in the section header table
-  ; e_shstrndx
-    dw 0          ; the index of the section header table entry names - zero, as there is no section header table
-; PROGRAM HEADER TABLE
-  ; p_type
-    dd 1          ; PT_LOAD (1) - a loadable program segment
-  ; p_offset
-    dd 0          ; offset (in bytes) of start of segment in file
-  ; p_vaddr
-    dd 0x20000    ; load this segment into memory at the address 0x20000
-  ; p_paddr
-    dd 0          ; load this segment from physical address 0 in file
-  ; p_filesz
-    dd 125        ; size (in bytes) of the segment in the file
-  ; p_memsz
-    dd 125        ; size (in bytes) of memory to load the segment into
-  ; p_flags
-    dd 5          ; segment permissions - PF_X + PF_R (0x1 + 0x100) - readable and executable
-  ; p_align
-    dd 2          ; segment alignment - segment addresses must be aligned to multiples of this value
+# ELF ehdr
+  # e_ident
+    # EI_MAG0, EI_MAG1, EI_MAG2, EI_MAG3: ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3 - the ELF magic number
+    .ascii "\x7f""ELF"
+    # EI_CLASS: 1 is ELFCLASS32 - meaning it's a 32-bit object
+    .byte 0x1
+    # EI_DATA: 1 is ELFDATA2LSB - meaning that values are little-endian encoded
+    .byte 0x1
+    # EI_VERSION: 1 is EV_CURRENT - the only valid value
+    .byte 0x1
+    # EI_OSABI: 0 is ELFOSABI_NONE - the generic SYSV ABI
+    .byte 0x0
+    # EI_ABIVERSION: used to distinguish between incompatible ABI versions. Unused for the SYSV ABI
+    .byte 0x0
+    # The remaining 7 bytes are unused, and should be set to 0
+    .4byte 0x0
+    .2byte 0x0
+    .byte 0x0
+  # e_type
+    # ET_EXEC - executable file
+    .2byte 0x2
+  # e_machine
+    # EM_386 - Intel 80386
+    .2byte 0x3
+  # e_version
+    # EV_CURRENT - the only valid value
+    .4byte 0x1
+  # e_entry
+    # The virtual memory to transfer control at. The file is loaded into memory address 0x20000, and the code starts 0x54 bytes into the file
+    .4byte 0x20054
+  # e_phoff
+    # the offset from the beginning of the file to the program header table
+    .4byte 0x34
+  # e_shoff
+    # the offset from the beginning of the file to the section header table - zero, as there is no section header table
+    .4byte 0x0
+  # e_flags
+    # processor-specific flags. None are in use here.
+    .4byte 0x0
+  # e_ehsize
+    # the size (in bytes) of the ELF header. for a 32-bit ELF, this will always be 52
+    .2byte 0x34
+  # e_phentsize
+    # the size (in bytes) of an entry in the program header table.
+    .2byte 0x20
+  # e_phnum
+    # the number of entries in the program header table
+    .2byte 0x1
+  # e_shentsize
+    # the size of an entry in the section header table, or 0 if there is no section header table
+    .2byte 0x0
+  # e_shnum
+    # the number of entries in the section header table
+    .2byte 0x0
+  # e_shstrndx
+    # the index of the section header table entry names - zero, as there is no section header table
+    .2byte 0x0
 
-; THE ACTUAL CODE
-  mov eax,4       ; b8 04 00 00 00 - set the EAX register to 4
-  mov ebx,1       ; bb 01 00 00 00 - set the EBX register to 1
-  mov ecx,0x20073 ; b9 73 00 02 00 - set the ECX register to 0x20073
-  mov edx,10      ; ba 0a 00 00 00 - set the EDX register to 10
-  int 0x80        ; cd 80 - syscall
-                    ; read the system call number from EAX - 4 is write
-                    ; load the file descriptor to write to from EBX - 1 is stdout
-                    ; load the bytes to write from the memory address in ECX - 0x20073 is 0x73 (118) bytes in
-                    ; load the number of bytes to write from EDX
-  mov eax,0x1     ; b8 01 00 00 00 - set the EAX register to 1
-  xor ebx,ebx     ; 31 db - set the EBX register to 0 by XOR'ing it to itself
-  int 0x80        ; cd 80  - syscall
-                    ; read the system call number from EAX - 1 is exit
-                    ; load the error code from EBX - 0 means no error
+# Program Header Table
+  # Program header entry
+    # p_type - PT_LOAD (1) - a loadable program segment
+    .4byte 0x1
+    # p_offset - offset (in bytes) of start of segment in file
+    .4byte 0x0
+    # p_vaddr - load this segment into memory at the address 0x20000
+    .4byte 0x020000
+    # p_paddr - load this segment from physical address 0 in file
+    .4byte 0x0
+    # p_filesz - size (in bytes) of the segment in the file
+    .4byte 0x7d
+    # p_memsz - size (in bytes) of memory to load the segment into
+    .4byte 0x7d
+    # p_flags - segment permissions - PF_X + PF_R (0x1 + 0x100) - readable and executable
+    .4byte 5
+    # p_align - segment alignment - segment addresses must be aligned to multiples of this value
+    .4byte 0x2
 
-; THE DATA
-db 0x1b,"[H",0x1b,"[J",0x1b,"[3J" ; this data is written to stdout by the first syscall.
-                                  ; it consists of 3 escape sequences:
+# The actual code
+  # first syscall: write(1, 0x20073, 10)
+    # On 32-bit x86 systems, write is syscall 4.
+    movl $0x4, %eax
+    # STDOUT is file descriptor #1
+    movl $0x1, %ebx
+    # the memory address with the data to print is 0x20073.
+    movl $0x20073, %ecx
+    # Write 10 bytes of data
+    movl $0xa, %edx
+    # interupt 0x80 - the syscall instruction for i386
+    int $0x80
+  # Second syscall: exit(0)
+    # on 32-bit x86 systems, exit is syscall 1.
+    mov $0x1, %eax
+    # set the EBX register to 0 by XOR'ing it to itself
+    # error code 0 - no error
+    xor %ebx, %ebx
+    # interupt 0x80
+    int $0x80
+
+# The escape sequences
+  .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
 ```
 
 #### Reassembly
 
-You'll need to have the Netwide Assembler installed. I installed it with Debian Bookworm's `nasm` package.
+To re-assemble the disassembly, you need to first assemble it with a 32-bit x86 version of the GNU assembler (`gas`, or just `as`). The problem is that it adds its own ELF header, program, and section tables, so you then need to extract the actual file out from its output.
 
-If you save the disassembly to `clear.asm`, you'll need to do the following to reassemble it:
+I used the versions from Debian Bookworm's `binutils-i686-linux-gnu` package.
+
+On `i386` systems, one should instead use the `binutils` package, as the `binutils-i686-linux-gnu` package is meant for working with foreign binaries.
+
+If you save the disassembly to `clear.S`, you'll need to do the following to reassemble it:
 
 ```sh
-# assemble
-nasm -fbin clear.asm -o clear
+# On non-i386 Debian systems with binutils-i686-linux-gnu installed, this will ensure
+# the appropriate binutils versions are first in the PATH.
+# On i386 Debian systems, it's harmless.
+PATH="/usr/i686-linux-gnu/bin:$PATH"
 
-# mark clear as executable
-chmod +x clear
+# assemble
+as -o clear.o clear.S -no-pad-sections
+
+# link
+ld -o clear.wrapped clear.o
+
+# extract
+objcopy -O binary clear.wrapped clear
 ```
