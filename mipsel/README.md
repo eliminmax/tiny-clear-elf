@@ -133,9 +133,6 @@ Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry 
 
 # The escape sequences
   .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
-
-# Padding
-  .ascii "\xff""\xff""\xff""\xff""\xff""\xff""\xff""\xff""\xff""\xff""\xff""\xff""\xff""\xff"
 ```
 
 #### Reassembly
@@ -157,17 +154,11 @@ If you save the disassembly to `clear.S`, you'll need to do the following to rea
 PATH="/usr/mipsel-linux-gnu/bin:$PATH"
 
 # assemble
-as -EL -mabi=32 -march=mips32r2 -o clear.o clear.S
+as -EL -mabi=32 -march=mips32r2 -o clear.o clear.S -no-pad-sections
 # -EL ensures it's a little-endian binary
 # -march=mips32r2 instructs it to target the minimum version supported by Debian Bookworm
 # -mabi=32 instructs it to use the O32 Application Binary Interface
 
 # extract
-objcopy --only-section .text -O binary clear.o clear.unwrapped
-
-# extracted binary will have 14 trailing bytes to discard
-head -c-14 clear.unwrapped > clear
-
-# mark clear as executable
-chmod +x clear
+objcopy --only-section .text -O binary clear.o clear
 ```

@@ -133,9 +133,6 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
 
 # The escape sequences
   .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
-
-# Padding
-  .ascii "\xff""\xff"
 ```
 
 #### Reassembly
@@ -155,17 +152,11 @@ If you save the disassembly to `clear.S`, you'll need to do the following to rea
 PATH="/usr/aarch64-linux-gnu/bin:$PATH"
 
 # assemble
-as -o clear.o clear.S
+as -o clear.o clear.S -no-pad-sections
 
 # link
 ld -o clear.wrapped clear.o
 
 # extract
-objcopy -O binary clear.wrapped clear.unwrapped
-
-# extracted binary will have 2 trailing bytes to discard
-head -c-2 clear.unwrapped > clear
-
-# mark clear as executable
-chmod +x clear
+objcopy -O binary clear.wrapped clear
 ```

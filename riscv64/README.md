@@ -135,9 +135,6 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
 
 # The escape sequences
   .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
-
-# Padding
-  .ascii "\xff""\xff"
 ```
 
 #### Reassembly
@@ -157,7 +154,7 @@ If you save the disassembly to `clear.S`, you'll need to do the following to rea
 PATH="/usr/riscv64-linux-gnu/bin:$PATH"
 
 # assemble
-as -mabi=lp64d -march=rv64gc -mlittle-endian -o clear.o clear.S
+as -mabi=lp64d -march=rv64gc -mlittle-endian -o clear.o clear.S -no-pad-sections
 # -mlittle-endian ensures it's a little-endian binary
 # -march=rv64gc instructs it to target the minimum hardware version supported by Debian
 # -mabi=lp64d instructs it to target the minimum ABI version supported by Debian
@@ -166,11 +163,5 @@ as -mabi=lp64d -march=rv64gc -mlittle-endian -o clear.o clear.S
 ld -o clear.wrapped clear.o
 
 # extract
-objcopy -O binary clear.wrapped clear.unwrapped
-
-# extracted binary will have 2 trailing bytes to discard
-head -c-2 clear.unwrapped > clear
-
-# mark clear as executable
-chmod +x clear
+objcopy -O binary clear.wrapped clear
 ```

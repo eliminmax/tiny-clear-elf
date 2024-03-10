@@ -127,9 +127,6 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
 # The escape sequences
   .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
 
-# Padding
-
-.2byte 0xffff
 ```
 
 #### Reassembly
@@ -143,25 +140,16 @@ On `powerpc64le` systems, one should instead use the `binutils` package, as the 
 If you save the disassembly to `clear.S`, you'll need to do the following to reassemble it:
 
 ```sh
-# On non-powerpc64le Debian systems with binutils-powerpc64le-linux-gnu installed, this will ensure
+# On non-ppc64el Debian systems with binutils-powerpc64le-linux-gnu installed, this will ensure
 # the appropriate binutils versions are first in the PATH.
-# On powerpc64le Debian systems, it's probably harmless.
+# On ppc64el Debian systems, it's probably harmless.
 PATH="/usr/powerpc64le-linux-gnu/bin:$PATH"
 
 # assemble
-as -le -mpower8 -o clear.o clear.S
+as -le -mpower8 -o clear.o clear.S -no-pad-sections
 # -le ensures it's a little-endian binary
 # -mpower8 instructs it to target the minimum version supported by Debian Bookworm
 
 # extract
-objcopy --only-section .text -O binary clear.o clear.unwrapped
-
-# link
-ld -o clear.wrapped clear.o
-
-# extracted binary will have 2 trailing bytes to discard
-head -c-2 clear.unwrapped > clear
-
-# mark clear as executable
-chmod +x clear
+objcopy --only-section .text -O binary clear.o clear
 ```

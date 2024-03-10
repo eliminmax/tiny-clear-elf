@@ -131,9 +131,6 @@ Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry 
 ESCAPE_SEQ:
 # The escape sequences
   .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
-
-# Padding
-  .ascii "\xff""\xff"
 ```
 
 #### Reassembly
@@ -153,7 +150,7 @@ If you save the disassembly to `clear.S`, you'll need to do the following to rea
 PATH="/usr/arm-linux-gnueabihf/bin:$PATH"
 
 # assemble
-as -mthumb -march=armv7-a -o clear.o clear.S
+as -mthumb -march=armv7-a -o clear.o clear.S -no-pad-sections
 # -mthumb instructs it to use Thumb instead of ARM instructions
 # -march=armv7-a ensures that the instructions are valid on all Debian armhf systems
 
@@ -161,11 +158,5 @@ as -mthumb -march=armv7-a -o clear.o clear.S
 ld -o clear.wrapped clear.o
 
 # extract
-objcopy -O binary clear.wrapped clear.unwrapped
-
-# extracted binary will have 2 trailing bytes to discard
-head -c-2 clear.unwrapped > clear
-
-# mark clear as executable
-chmod +x clear
+objcopy -O binary clear.wrapped clear
 ```

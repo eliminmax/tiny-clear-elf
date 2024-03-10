@@ -135,9 +135,6 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
 
 # The escape sequences
   .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
-
-# Need 10 bytes of padding
-  .ascii "\xff""\xff""\xff""\xff""\xff""\xff""\xff""\xff""\xff""\xff"
 ```
 
 #### Reassembly
@@ -150,8 +147,6 @@ On `mips64el` systems, one should instead use the `binutils` package, as the `bi
 
 If you save the disassembly to `clear.S`, you'll need to do the following to reassemble it:
 
-*I'm using the same technique I hacked together for the mipsel architecture, but this time, it has 10 bytes of padding, rather than 14.*
-
 ```sh
 # On non-mips64el Debian systems with binutils-mips64el-linux-gnuabi64 installed, this will ensure
 # the appropriate binutils versions are first in the PATH.
@@ -159,17 +154,11 @@ If you save the disassembly to `clear.S`, you'll need to do the following to rea
 PATH="/usr/mips64el-linux-gnuabi64/bin:$PATH"
 
 # assemble
-as -EL -mabi=64 -march=mips64r2 -o clear.o clear.S
+as -EL -mabi=64 -march=mips64r2 -o clear.o clear.S -no-pad-sections
 # -EL ensures it's a little-endian binary
 # -march=mips64r2 instructs it to target the minimum version supported by Debian Bookworm
 # -mabi=64 instructs it to use the N64 Application Binary Interface
 
 # extract
-objcopy --only-section .text -O binary clear.o clear.unwrapped
-
-# extracted binary will have 10 trailing bytes to discard
-head -c-10 clear.unwrapped > clear
-
-# mark clear as executable
-chmod +x clear
+objcopy --only-section .text -O binary clear.o clear
 ```

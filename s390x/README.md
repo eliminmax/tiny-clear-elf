@@ -133,18 +133,14 @@ On `s390x` systems, one should instead use the `binutils` package, as the `binut
 If you save the disassembly to `clear.S`, you'll need to do the following to reassemble it:
 
 ```sh
-#!/bin/sh
 # On non-s390x Debian systems with binutils-s390x-linux-gnu installed, this will ensure
 # the appropriate binutils versions are first in the PATH.
 # On s390x Debian systems, it's probably harmless.
 PATH="/usr/s390x-linux-gnu/bin:$PATH"
 
 # assemble
-as -o clear.o clear.S
+as -o clear.o clear.S -no-pad-sections
 
 # extract binary
 objcopy --only-section .text -O binary clear.o clear
-
-# mark clear as executable
-chmod +x clear
 ```
