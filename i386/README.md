@@ -143,7 +143,8 @@ If you save the disassembly to `clear.S`, you'll need to do the following to rea
 PATH="/usr/i686-linux-gnu/bin:$PATH"
 
 # assemble
-as -o clear.o clear.S -no-pad-sections
+as -march=i686 -o clear.o clear.S -no-pad-sections
+# -march=i686 ensures that the instructions are valid on all Debian i386 systems
 
 # link
 ld -o clear.wrapped clear.o

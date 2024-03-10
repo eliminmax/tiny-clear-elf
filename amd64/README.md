@@ -146,7 +146,8 @@ If you save the disassembly to `clear.S`, you'll need to do the following to rea
 PATH="/usr/x86-linux-gnu/bin:$PATH"
 
 # assemble
-as -o clear.o clear.S -no-pad-sections
+as -march=generic64 -o clear.o clear.S -no-pad-sections
+# -march=generic64 ensures that the instructions are valid on all Debian amd64 systems
 
 # link
 ld -o clear.wrapped clear.o
