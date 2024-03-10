@@ -64,8 +64,10 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     # the offset from the beginning of the file to the section header table - zero, as there is no section header table
     .8byte 0x0
   # e_flags
-    # processor-specific flags. None are in use here.
-    .4byte 0x0
+    # processor-specific flags. There are two in use here.
+      # EF_RISCV_FLOAT_ABI_DOUBLE (0x0004) indicates that it targets systems that use 64-bit floats (like the systems Debian targets)
+      # EF_RISCV_RVC (0x0001) indicates that it uses the C extension for compressed instructions.
+    .4byte 0x0005
   # e_ehsize
     # the size (in bytes) of the ELF header. for a 64-bit ELF, this will always be 64
     .2byte 0x40
