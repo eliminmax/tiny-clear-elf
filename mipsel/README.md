@@ -63,7 +63,7 @@ Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry 
     # the offset from the beginning of the file to the section header table - zero, as there is no section header table
     .4byte 0x0
   # e_flags
-    # processor-specific flags. Not sure if this is needed, but it can't hurt
+    # processor-specific flags.
     # 0x7------- = mips32r2
     # 0x----1--- = o32 ABI
     .4byte 0x70001000
