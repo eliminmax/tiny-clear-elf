@@ -9,7 +9,7 @@ This is a valid executable for `armel` and `armhf`.
 ```xxd
 00000000: 7f45 4c46 0101 0100 0000 0000 0000 0000  .ELF............
 00000010: 0200 2800 0100 0000 5500 0200 3400 0000  ..(.....U...4...
-00000020: 0000 0000 0000 0000 3400 2000 0100 0000  ........4. .....
+00000020: 0000 0000 0000 0005 3400 2000 0100 0000  ........4. .....
 00000030: 0000 0000 0100 0000 0000 0000 0000 0200  ................
 00000040: 0000 0000 6e00 0000 6e00 0000 0500 0000  ....n...n.......
 00000050: 0200 0000 0427 0120 02a1 0a22 00df 0127  .....'. ..."...'
@@ -62,8 +62,8 @@ Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry 
     # the offset from the beginning of the file to the section header table - zero, as there is no section header table
     .4byte 0x0
   # e_flags
-    # processor-specific flags. None are in use here.
-    .4byte 0x0
+    # processor-specific flags. Specify that the latest version of the ABI is in use
+    .4byte 0x05000000
   # e_ehsize
     # the size (in bytes) of the ELF header. for a 32-bit ELF, this will always be 52
     .2byte 0x34
