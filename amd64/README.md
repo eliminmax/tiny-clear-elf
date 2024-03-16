@@ -11,11 +11,10 @@
 00000030: 0000 0000 4000 3800 0100 0000 0000 0000  ....@.8.........
 00000040: 0100 0000 0500 0000 0000 0000 0000 0000  ................
 00000050: 0000 0100 0000 0000 0000 0000 0000 0000  ................
-00000060: a100 0000 0000 0000 a100 0000 0000 0000  ................
-00000070: 0200 0000 0000 0000 b801 0000 00bf 0100  ................
-00000080: 0000 be97 0001 00ba 0a00 0000 0f05 b83c  ...............<
-00000090: 0000 0031 ff0f 051b 5b48 1b5b 4a1b 5b33  ...1....[H.[J.[3
-000000a0: 4a                                       J
+00000060: 9800 0000 0000 0000 9800 0000 0000 0000  ................
+00000070: 0200 0000 0000 0000 6a01 5889 c7be 8e00  ........j.X.....
+00000080: 0100 6a0a 5a0f 056a 3c58 31ff 0f05 1b5b  ..j.Z..j<X1....[
+00000090: 481b 5b4a 1b5b 334a                      H.[J.[3J
 ```
 
 ## Breakdown
@@ -98,27 +97,33 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     # p_paddr - load this segment from physical address 0 in file
     .8byte 0x0
     # p_filesz - size (in bytes) of the segment in the file
-    .8byte 0xa1
+    .8byte 0x98
     # p_memsz - size (in bytes) of memory to load the segment into
-    .8byte 0xa1
+    .8byte 0x98
     # p_align - segment alignment - segment addresses must be aligned to multiples of this value
     .8byte 0x2
 
 # The actual code
   # first syscall: write(1, 0x10097, 10)
     # On 64-bit x86 systems, write is syscall 1.
-    movl $0x1, %eax
+    # pushing and popping like this takes 3 bytes, where `mov` takes 5
+    pushq $0x1
+    pop %rax
     # STDOUT is file descriptor #1
-    movl $0x1, %edi
-    # the memory address with the data to print is 0x10097.
-    movl $0x10097, %esi
+    # because rax is set to 1, by using the 32-bit version of the register to register mov to copy eax to edi,
+    # it only needs 2 bytes
+    mov %eax, %edi
+    # the memory address with the data to print is 0x1008e.
+    movl $0x1008e, %esi
     # Write 10 bytes of data
-    movl $0xa, %edx
+    pushq $0xa
+    pop %rdx
     # syscall ask the kernel to perform the syscall specified in RAX, with arguments from RDI, RSI, RDX, and others
     syscall
   # Second syscall: exit(0)
     # on 64-bit x86 systems, exit is syscall 60.
-    movl $0x3c, %eax
+    pushq $0x3c
+    pop %rax
     # 31 ff - set the EDI register to 0 by XOR'ing it to itself
     # error code 0 - no error
     xor %edi, %edi
