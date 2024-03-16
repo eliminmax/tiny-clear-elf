@@ -257,7 +257,7 @@ The Program header is a struct with 8 values within it, defining the location an
 | `p_type`   | 4     | Elf64_Word  | Segment type             |
 | `p_flags`  | 4     | Elf64_Word  | Segment flags            |
 | `p_offset` | 8     | Elf64_Off   | Segment file offset      |
-| `p_vaddr`  | 8     | Elf64_Addr  | Segment virtul address   |
+| `p_vaddr`  | 8     | Elf64_Addr  | Segment virtual address  |
 | `p_paddr`  | 8     | Elf64_Addr  | Segment physical address |
 | `p_filesz` | 8     | Elf64_Xword | Segment Size in file     |
 | `p_memsz`  | 8     | Elf64_Xword | Segment size in memory   |
