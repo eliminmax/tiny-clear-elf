@@ -11,11 +11,11 @@
 00000030: 0000 0000 4000 3800 0100 0000 0000 0000  ....@.8.........
 00000040: 0100 0000 0500 0000 0000 0000 0000 0000  ................
 00000050: 0000 0100 0000 0000 0000 0000 0000 0000  ................
-00000060: a600 0000 0000 0000 a600 0000 0000 0000  ................
+00000060: a200 0000 0000 0000 a200 0000 0000 0000  ................
 00000070: 0200 0000 0000 0000 0808 8052 2000 80d2  ...........R ...
-00000080: 2100 a0d2 8113 80f2 4201 80d2 0100 00d4  !.......B.......
-00000090: a80b 8052 0000 80d2 0100 00d4 1b5b 481b  ...R.........[H.
-000000a0: 5b4a 1b5b 334a                           [J.[3J
+00000080: c100 0010 4201 80d2 0100 00d4 a80b 8052  ....B..........R
+00000090: 0000 80d2 0100 00d4 1b5b 481b 5b4a 1b5b  .........[H.[J.[
+000000a0: 334a                                     3J
 ```
 
 ## Breakdown
@@ -98,9 +98,9 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     # p_paddr - load this segment from physical address 0 in file
     .8byte 0x0
     # p_filesz - size (in bytes) of the segment in the file
-    .8byte 0xa6
+    .8byte 0xa2
     # p_memsz - size (in bytes) of memory to load the segment into
-    .8byte 0xa6
+    .8byte 0xa2
     # p_align - segment alignment - segment addresses must be aligned to multiples of this value
     .8byte 0x2
 
@@ -110,15 +110,9 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     mov w8, 0x40
     # STDOUT is file descriptor #1
     mov x0, 0x1
-    # Because each instruction is exactly 32 bits long,
-    # there's not enough room to set all 32 bits with 1
-    # `mov` command, but `mov` zeros out the bits not explicitly set.
-    # The solution I'm using is to set the register to 0x10000, then use movk to set the lowest bits only.
-        # set x1 to 0x10000
-      mov x1, 0x10000
-      # set the lowest 16 bits to 0x9c
-      movk x1, 0x9c
-      # thus, the value of r1 is set to 0x1009c - the memory address of the data to print.
+    # instead of taking 64 bytes to use a mov to set the lower
+    # bytes follwed by a movk to set the upper bytes, set them relative to the program counter
+    adr x1, ESCAPE_SEQ
     # Write 10 bytes of data
     mov x2, 0xa
     # supervisor call 0 is equivalent to amd64's syscall and i386's int 0x80
@@ -131,6 +125,10 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     # supervisor call 0
     svc 0x0
 
+# I'd normally not use any lables in these, but the ADR encoding used requires a label
+#   so that the assembler can calculate the offset the distance from the adr instruction to the label
+#   I'd prefer to just input an immediate (i.e. adr x1, #0x18, but that's invalid syntax)
+ESCAPE_SEQ:
 # The escape sequences
   .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
 ```
