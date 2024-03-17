@@ -175,7 +175,7 @@ So to push `1` to the stack, the following would be used:
 
 ##### looking at `pop` more cloesly
 
-From page 1612, the `pop` instruction to pop a 32-bit register in 32-bit mode is the same as a 64-bit register in 64-bit mode - `58` + `rd` - meaning you add the hex value `58` to the register identifier.
+From page 1612, the `pop` instruction to pop a 32-bit register in 32-bit mode is the same as a 64-bit register in 64-bit mode - `58` + `rd` - meaning you add the hex value `58` to the 3-bit register identifier.
 
 Page 2881 details that the alternate encoding takes the following form:
 
@@ -189,7 +189,7 @@ So to `pop` the stack into `eax`, the following would be used:
 |----------|-------|-------|
 | `0101 1` | `000` | `58`  |
 
-##### `push 1; pop eax`
+##### `push 1; pop rax`
 
 The resulting hex would be `6a0158`
 
@@ -242,19 +242,75 @@ So `mov edi, eax` would be as follows:
 |------------|-----|------|-------------|-------------|--------|
 | `1000 100` | `1` | `11` | `eax`=`000` | `edi`=`111` | `89c7` |
 
-#### `mov edx, 0xa` with `push 0xa; pop rdx`
+#### replace `mov edx, 0xa` with `push 0xa; pop rdx`
 
-| `0110 10` | `s` | `0` | `immediate data` | `0101 1` | `reg` | `hex`     |
-|-----------|-----|-----|------------------|----------|-------|-----------|
-| `0110 10` | `1` | `0` | `0000 1010`      | `0101 1` | `010` | `6a0a5a`  |
+| `0110 10` | `s` | `0` | `immediate data` | `0101 1` | `reg` | `hex`    |
+|-----------|-----|-----|------------------|----------|-------|----------|
+| `0110 10` | `1` | `0` | `0000 1010`      | `0101 1` | `010` | `6a0a5a` |
 
-#### `mov eax, 0x3c` with `push 0x3c; pop rax`
+#### replace `mov eax, 0x3c` with `push 0x3c; pop rax`
 
-| `0110 10` | `s` | `0` | `immediate data` | `0101 1` | `reg` | `hex`     |
-|-----------|-----|-----|------------------|----------|-------|-----------|
-| `0110 10` | `1` | `0` | `0011 1100`      | `0101 1` | `000` | `6a3c58`  |
+| `0110 10` | `s` | `0` | `immediate data` | `0101 1` | `reg` | `hex`    |
+|-----------|-----|-----|------------------|----------|-------|----------|
+| `0110 10` | `1` | `0` | `0011 1100`      | `0101 1` | `000` | `6a3c58` |
+
+#### replace `mov esi, 0x10097` with `mov esi, 0x1008e`
+
+This does not save any bytes, but it changes the value to account for the new memory address of the data to write.
+
+From page 2879:
+
+```
+1011 w reg : immediate data
+```
+
+| `1011` | `w` | `reg` | `immediate data`                          | `hex`        |
+|--------|-----|-------|-------------------------------------------|--------------|
+| `1011` | `1` | `110` | `1000 1110 0000 0000 0000 0001 0000 0000` | `be8e000100` |
 
 ### `i386` improvements
+
+I'll be using the same `pop`/`push` approach, but not the register-to-register `mov`, as the syscall number is different.
+
+Because the shorter `inc` instruction encoding is available, I could use the `xor reg, reg; inc reg` approach and not lose any bytes, but I wouldn't gain any bytes either, so I decided not to bother.
+
+#### replace `mov eax, 4` with `push 0x4; pop eax`
+
+| `0110 10` | `s` | `0` | `immediate data` | `0101 1` | `reg` | `hex`    |
+|-----------|-----|-----|------------------|----------|-------|----------|
+| `0110 10` | `1` | `0` | `0000 0100`      | `0101 1` | `000` | `6a0458` |
+
+#### replace `mov ebx, 1` with `push 0x1; pop ebx`
+
+| `0110 10` | `s` | `0` | `immediate data` | `0101 1` | `reg` | `hex`    |
+|-----------|-----|-----|------------------|----------|-------|----------|
+| `0110 10` | `1` | `0` | `0000 0001`      | `0101 1` | `011` | `6a015b` |
+
+#### replace `mov edx, 0xa` with `push 0xa; pop edx`
+
+| `0110 10` | `s` | `0` | `immediate data` | `0101 1` | `reg` | `hex`    |
+|-----------|-----|-----|------------------|----------|-------|----------|
+| `0110 10` | `1` | `0` | `0000 1010`      | `0101 1` | `010` | `6a0a5a` |
+
+#### replace `mov eax, 1` with `push 0x1; pop eax`
+
+| `0110 10` | `s` | `0` | `immediate data` | `0101 1` | `reg` | `hex`    |
+|-----------|-----|-----|------------------|----------|-------|----------|
+| `0110 10` | `1` | `0` | `0000 0001`      | `0101 1` | `000` | `6a0158` |
+
+#### replace `mov ecx, 0x20073` with `mov ecx, 0x2006e`
+
+This does not save any bytes, but it changes the value to account for the new memory address of the data to write.
+
+From page 2879:
+
+```
+1011 w reg : immediate data
+```
+
+| `1011` | `w` | `reg` | `immediate data`                          | `hex`        |
+|--------|-----|-------|-------------------------------------------|--------------|
+| `1011` | `1` | `001` | `0110 1011 0000 0000 0000 0010 0000 0000` | `b96b000200` |
 
 ## The result
 
@@ -262,7 +318,7 @@ So `mov edi, eax` would be as follows:
 
 | original hex | original instruction | new instruction(s)   | new hex      |
 |--------------|----------------------|----------------------|--------------|
-| `b801000000` | `mov eax, 1`         | `push 1; pop rax`    | `6a0158`     |
+| `b801000000` | `mov eax, 1`         | `push 0x1; pop rax`  | `6a0158`     |
 | `bf01000000` | `mov edi, 1`         | `mov edi, eax`       | `89c7`       |
 | `be97000100` | `mov esi, 0x10097`   | `mov esi, 0x1008e`   | `be8e000100` |
 | `ba0a000000` | `mov edx, 0xa`       | `push 0xa; pop rdx`  | `6a0a5a`     |
@@ -270,3 +326,16 @@ So `mov edi, eax` would be as follows:
 | `b83c000000` | `mov eax, 0x3c`      | `push 0x3c; pop rax` | `6a3c58`     |
 | `31ff`       | `xor edi, edi`       | `xor edi, edi`       | `31ff`       |
 | `0f05`       | `syscall`            | `syscall`            | `0f05`       |
+
+* `i386`:
+
+| original hex | original instruction | new instruction(s)  | new hex      |
+|--------------|----------------------|---------------------|--------------|
+| `b804000000` | `mov eax, 4`         | `push 0x4; pop eax` | `6a0458`     |
+| `bb01000000` | `mov ebx, 1`         | `push 0x1; pop ebx` | `6a015b`     |
+| `b973000200` | `mov ecx, 0x20073`   | `mov ecx, 0x2006b`  | `b96b000200` |
+| `ba0a000000` | `mov edx, 0xa`       | `push 0xa; pop edx` | `6a0a5a`     |
+| `cd80`       | `int 0x80`           | `int 0x80`          | `cd80`       |
+| `b801000000` | `mov eax, 1`         | `push 0x1; pop eax` | `6a0158`     |
+| `31db`       | `xor ebx, ebx`       | `xor ebx, ebx`      | `31db`       |
+| `cd80`       | `int 0x80`           | `int 0x80`          | `cd80`       |
