@@ -106,9 +106,9 @@ cat logo
 
 # the first line is an escape sequence to set the text to bold green
 printf '\e[1;32m
-| | -+- |
-+-+  |  |
-| | -+- .
+╻ ╻ ╺┳╸ ╻
+┣━┫  ┃  ╹
+╹ ╹ ╺┻╸ •
 \e[m
 This is my presentation of the Tiny Clear Elf series of executables\n'
 # the 2nd-to-last line is an escape sequence to clear text formatting
