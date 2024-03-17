@@ -150,9 +150,9 @@ If you save the disassembly to `clear.S`, you'll need to do the following to rea
 PATH="/usr/aarch64-linux-gnu/bin:$PATH"
 
 # assemble
-as -march=armv8-a -o clear.o clear.S -no-pad-sections
+as -march=armv8-a -EL -o clear.o clear.S -no-pad-sections
 # -march=armv8-a ensures that the instructions are valid on all Debian arm64 systems
-
+# -EL ensures that it uses little-endian byte order
 
 # link
 ld -o clear.wrapped clear.o
