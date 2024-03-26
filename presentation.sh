@@ -38,9 +38,58 @@
 #
 # This script must be run in a terminal emulator that's at least 94 columns and 50 rows in size.
 # To avoid cutting off content, if it detects that it's not operating at that size, it will exit.
+#
+# Exit code 2 means that there was an issue with the terminal environment (e.g. too small to fit the presentation).
+# Exit code 3 means that there was a dependency issue
+# Exit code 1 means that something is seriously broken, and `cd`ing to the directory containing this script failed.
+
+# some dependency checking
+dep_issues=0
+
+# make sure binfmt_misc support is enabled - this enables running foreign binaries
+if [ ! -e /proc/sys/fs/binfmt_misc ]; then
+    printf 'error: binfmt support is missing.\n' >&2
+    dep_issues=$((dep_issues+1))
+fi
+
+
+
+dep_check() {
+    if ! command -v "$1" >/dev/null 2>&1; then
+        printf 'error: missing dependency: ' >&2
+        printf '%s (provided by %s %s)\n' "$1" "$2" "$3" >&2
+        dep_issues=$((dep_issues+1))
+    fi
+}
+
+
+for coreutils_cmd in cat dirname head realpath stty tail; do
+    dep_check "$coreutils_cmd" deb coreutils
+done
+
+dep_check awk deb awk
+dep_check readelf deb binutils
+dep_check hexyl deb hexyl
+dep_check figlet deb figlet
+dep_check tput deb ncurses-bin
+dep_check rasm2 git 'https://github.com/radareorg/radare2'
+
+# check that the binaries can run
+for clear_bin in */clear; do
+    if ! "$clear_bin" >/dev/null 2>&1; then
+        printf 'error: non-zero exit code testing %s. ' "$clear_bin"
+        printf 'Is binfmt support set up for that architecture?\n'
+        dep_issues=$((dep_issues+1))
+    fi
+done
+
+if [ "$dep_issues" -gt 0 ]; then
+    exit 3
+fi
 
 # make sure we're in the right directory
 cd "$(dirname "$(realpath "$0")")" || exit 1
+
 
 # save original terminal settings to be restored at the end
 stty_orig="$(stty -g)"
