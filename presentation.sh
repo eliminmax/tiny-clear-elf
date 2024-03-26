@@ -41,7 +41,7 @@
 #
 # Exit code 2 means that there was an issue with the terminal environment (e.g. too small to fit the presentation).
 # Exit code 3 means that there was a dependency issue
-# Exit code 1 means that something is seriously broken, and `cd`ing to the directory containing this script failed.
+# Exit code 100 means that something is seriously broken, and `cd`ing to the directory containing this script failed.
 
 # some dependency checking
 dep_issues=0
@@ -88,7 +88,7 @@ if [ "$dep_issues" -gt 0 ]; then
 fi
 
 # make sure we're in the right directory
-cd "$(dirname "$(realpath "$0")")" || exit 1
+cd "$(dirname "$(realpath "$0")")" || exit 100
 
 
 # save original terminal settings to be restored at the end
