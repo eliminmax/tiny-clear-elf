@@ -1,5 +1,5 @@
 #!/bin/sh
-# for this script to work, the system MUST be able to run foreign ELF binaries as
+# for this script to work, the system SHOULD be able to run foreign ELF binaries as
 # though they were native, using the Linux kernel's binfmt_misc capabilities and
 # something like qemu-user, MUST be run from the Tiny Clear ELF git directory,
 # and MUST have the following programs installed:
@@ -32,11 +32,17 @@
 # rasm2 is part of the radare2 reverse engineering toolkit, which is not in
 # Debian's repos. Its source can be found at https://github.com/radareorg/radare2
 # 
-# Additionally, on a Debian system, to run foreign binaries as required, you must install:
+# On a Debian system, to run foreign binaries as though they're native, you SHOULD install:
 # * systemd or binfmt-support (enables binfmt_misc usage and provides an interface to it)
 # * qemu-user-binfmt or qemu-user-static (enables running foreign binaries)
 #
-# This script must be run in a terminal emulator that's at least 94 columns and 50 rows in size.
+# If you do not have bindmt_misc enabled, or do not want to use it, define the FORCE_USE_QEMU
+# environment variable, and this will try to fall back to invoking qemu-user binaries.
+# Will prioritize qemu-$arch over qemu-$arch-static, but supports the latter as a fall-back
+# If you do that, then each supported architecture MUST have qemu-$arch and/or qemu-$arch-static
+# installed to the $PATH.
+#
+# This script MUST be run in a terminal emulator that's at least 94 columns and 50 rows in size.
 # To avoid cutting off content, if it detects that it's not operating at that size, it will exit.
 #
 # Exit code 2 means that there was an issue with the terminal environment (e.g. too small to fit the presentation).
@@ -46,14 +52,6 @@
 # some dependency checking
 dep_issues=0
 
-# make sure binfmt_misc support is enabled - this enables running foreign binaries
-if [ ! -e /proc/sys/fs/binfmt_misc ]; then
-    printf 'error: binfmt support is missing.\n' >&2
-    dep_issues=$((dep_issues+1))
-fi
-
-
-
 dep_check() {
     if ! command -v "$1" >/dev/null 2>&1; then
         printf 'error: missing dependency: ' >&2
@@ -61,7 +59,6 @@ dep_check() {
         dep_issues=$((dep_issues+1))
     fi
 }
-
 
 for coreutils_cmd in cat dirname head realpath stty tail; do
     dep_check "$coreutils_cmd" deb coreutils
@@ -74,22 +71,61 @@ dep_check figlet deb figlet
 dep_check tput deb ncurses-bin
 dep_check rasm2 git 'https://github.com/radareorg/radare2'
 
-# check that the binaries can run
-for clear_bin in */clear; do
-    if ! "$clear_bin" >/dev/null 2>&1; then
-        printf 'error: non-zero exit code testing %s. ' "$clear_bin"
-        printf 'Is binfmt support set up for that architecture?\n'
+# "${FORCE_USE_QEMU+x}" resolves to 'x' if FORCE_USE_QEMU is defined
+# -z tests if the following string is empty
+# if FORCE_USE_QEMU is defined, even if it's empty, this won't run, as even an empty var becomes 'x'
+if [ -z "${FORCE_USE_QEMU+x}" ]; then
+    # make sure binfmt_misc support is enabled - this enables running foreign binaries
+    if [ ! -e /proc/sys/fs/binfmt_misc ]; then
+        printf 'error: binfmt support is missing.\n' >&2
         dep_issues=$((dep_issues+1))
+    elif [ "$(cat /proc/sys/fs/binfmt_misc/status)" != 'enabled' ]; then
+        printf 'error: binfmt support is disabled.\n' >&2
+        dep_issues=$((dep_issues+1))
+    else
+        # check that all of the binaries can run
+        for clear_bin in */clear; do
+            if ! "$clear_bin" >/dev/null 2>&1; then
+                printf 'error: non-zero exit code testing %s. ' "$clear_bin" >&2
+                printf 'Is binfmt support set up for that architecture?\n' >&2
+                dep_issues=$((dep_issues+1))
+            fi
+        done
     fi
-done
+else
+    # generate qemu wrapper functions - Debian has both statically and dynamically linked versions
+    # of qemu-user, and the names of the statically linked ones have -static added to the end.
+    # define wrapper functions to call the appropriate binary
+    for arch in x86_64 i386 arm aarch64 mipsel mips64el ppc64le s390x riscv64; do
+        # `eval` to define function dynamically based on architecture and available commands
+        # prioritize dynamically linked
+        if command -v "qemu-$arch" >/dev/null 2>&1; then
+            # if qemu-s390x exists, this will evaluate as 's390x_wrapper () { qemu-s390x "$@"; }'
+            # which is a function that just passes its arguments straight to the qemu-s390x command
+            eval "${arch}_wrapper() { qemu-$arch \"\$@\"; }"
+        elif command -v "qemu-$arch-static" >/dev/null 2>&1; then
+            # if qemu-s390x doesn't exist, but qemu-s390x-static does, this will evaluate as
+            # 's390x_wrapper () { qemu-s390x-static "$@"; }'
+            # which is a function that just passes its arguments straight to the qemu-s390x-static command
+            eval "${arch}_wrapper() { qemu-$arch-static \"\$@\"; }"
+        else
+            printf 'Neither qemu-%s nor qemu-%s-static found.\n' "$arch" "$arch" >&2
+            dep_issues=$((dep_issues+1))
+        fi
+    done
+fi
 
 if [ "$dep_issues" -gt 0 ]; then
+    if [ "$dep_issues" -eq 1 ]; then
+        printf '\e[1mExiting: found a dependency issue.\e[m\n' >&2
+    else
+        printf '\e[1mExiting: found %d dependency issues.\e[m\n' "$dep_issues" >&2
+    fi
     exit 3
 fi
 
 # make sure we're in the right directory
 cd "$(dirname "$(realpath "$0")")" || exit 100
-
 
 # save original terminal settings to be restored at the end
 stty_orig="$(stty -g)"
@@ -149,6 +185,16 @@ wait_for_next() {
     read -r _wait_var # this variable is unused, but needs to be set anyway
 }
 
+run_current () {
+    # invoke tiny clear elf directly unless FORCE_USE_QEMU is defined
+    if [ -z "${FORCE_USE_QEMU+x}" ]; then
+        "$tiny_clear_elf"
+    else
+        "$qemu_wrapper" "$tiny_clear_elf"
+    fi
+
+}
+
 sh_clear
 
 cat logo
@@ -165,27 +211,27 @@ This is my presentation of the Tiny Clear Elf series of executables\n'
 wait_for_next
 
 for tiny_clear_elf in */clear; do
-    "$tiny_clear_elf" # use the current executable to clear the screen
-    # each Tiny Clear ELF is in a folder matching its architecture name
+    # need this info for proper display and disassembly
     architecture="$(dirname "$tiny_clear_elf")"
+    case "$architecture" in
+           'amd64') rasm2_arch=x86   endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 qemu_wrapper=x86_64_wrapper;;
+            'i386') rasm2_arch=x86   endianness=little rasm2_bits=32 ehdr_size=52 phdr_size=32 qemu_wrapper=i386_wrapper;;
+           'armhf') rasm2_arch=arm   endianness=little rasm2_bits=16 ehdr_size=52 phdr_size=32 qemu_wrapper=arm_wrapper;;
+           'armel') rasm2_arch=arm   endianness=little rasm2_bits=16 ehdr_size=52 phdr_size=32 qemu_wrapper=arm_wrapper;;
+           'arm64') rasm2_arch=arm   endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 qemu_wrapper=aarch64_wrapper;;
+          'mipsel') rasm2_arch=mips  endianness=little rasm2_bits=32 ehdr_size=52 phdr_size=32 qemu_wrapper=mipsel_wrapper;;
+        'mips64el') rasm2_arch=mips  endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 qemu_wrapper=mips64el_wrapper;;
+         'ppc64el') rasm2_arch=ppc   endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 qemu_wrapper=ppc64le_wrapper;;
+           's390x') rasm2_arch=s390  endianness=big    rasm2_bits=64 ehdr_size=64 phdr_size=56 qemu_wrapper=s390x_wrapper;;
+         'riscv64') rasm2_arch=riscv endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 qemu_wrapper=riscv64_wrapper;;
+    esac
+    # for armhf and armel, it's technically 32-bits, but because
+    # it uses thumb instructions, rasm2 needs to be told it's 16.
 
+    run_current # use the current executable to clear the screen
+    # each Tiny Clear ELF is in a folder matching its architecture name
 
     arch_specific_logo
-    # need this info for proper display and disassembly
-    case "$architecture" in
-           'amd64') rasm2_arch=x86   endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 ;;
-            'i386') rasm2_arch=x86   endianness=little rasm2_bits=32 ehdr_size=52 phdr_size=32 ;;
-           'armhf') rasm2_arch=arm   endianness=little rasm2_bits=16 ehdr_size=52 phdr_size=32 ;;
-           'armel') rasm2_arch=arm   endianness=little rasm2_bits=16 ehdr_size=52 phdr_size=32 ;;
-           'arm64') rasm2_arch=arm   endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 ;;
-          'mipsel') rasm2_arch=mips  endianness=little rasm2_bits=32 ehdr_size=52 phdr_size=32 ;;
-        'mips64el') rasm2_arch=mips  endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 ;;
-         'ppc64el') rasm2_arch=ppc   endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 ;;
-           's390x') rasm2_arch=s390  endianness=big    rasm2_bits=64 ehdr_size=64 phdr_size=56 ;;
-         'riscv64') rasm2_arch=riscv endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 ;;
-    esac
-    # for armhf, it's technically 32-bits, but because
-    # it uses thumb instructions, rasm2 needs to be told it's 16.
 
     show_heading 8 'HEXDUMP OF EXECUTABLE'
     hexyl "$tiny_clear_elf"
@@ -196,7 +242,7 @@ for tiny_clear_elf in */clear; do
 
     wait_for_next
 
-    "$tiny_clear_elf"
+    run_current
 
     arch_specific_logo
 
@@ -220,7 +266,7 @@ for tiny_clear_elf in */clear; do
 
     show_heading 42 'HEXDUMP OF OUTPUT'
 
-    "$tiny_clear_elf" | hexyl
+    run_current | hexyl
 
     wait_for_next
 done
