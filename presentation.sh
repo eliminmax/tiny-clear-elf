@@ -78,9 +78,11 @@ if [ -z "${FORCE_USE_QEMU+x}" ]; then
     # make sure binfmt_misc support is enabled - this enables running foreign binaries
     if [ ! -e /proc/sys/fs/binfmt_misc ]; then
         printf 'error: binfmt support is missing.\n' >&2
+        printf 'Maybe try running FORCE_USE_QEMU=y ./%s\n' "$0" >&2
         dep_issues=$((dep_issues+1))
     elif [ "$(cat /proc/sys/fs/binfmt_misc/status)" != 'enabled' ]; then
         printf 'error: binfmt support is disabled.\n' >&2
+        printf 'Maybe try running FORCE_USE_QEMU=y ./%s\n' "$0" >&2
         dep_issues=$((dep_issues+1))
     else
         # check that all of the binaries can run
