@@ -52,7 +52,7 @@
 # some dependency checking
 dep_issues=0
 
-dep_check() {
+dep_check () {
     if ! command -v "$1" >/dev/null 2>&1; then
         printf 'error: missing dependency: ' >&2
         printf '%s (provided by %s %s)\n' "$1" "$2" "$3" >&2
@@ -135,20 +135,20 @@ stty -echo # hide anything the user types
 # https://old.reddit.com/r/linuxquestions/comments/rl1jai/comment/hphcj8h/
 tput civis # hide cursor
 
-show_heading() {
+show_heading () {
     # display a heading at a specific row in bold green underlined, enclosed in parenthases
     # first argument is the row number
     # second argument is the heading text
     printf '\e[%dH\e[1;4;32m(%s)\e[m\n' "$1" "$2"
 }
 
-sh_clear() {
+sh_clear () {
     # why not use one of the 10 different clear commands I'm presenting?
     # I don't want to have to choose which one to use.
     printf '\e[H\e[J\e[3J'
 }
 
-cleanup() {
+cleanup () {
     # at the end of a run, restore the terminal settings to how they were.
     stty "$stty_orig"
     tput cnorm
@@ -171,7 +171,7 @@ dimension_check () {
 dimension_check # run once right away
 trap dimension_check WINCH # re-run dimension_check if terminal is resized.
 
-arch_specific_logo() {
+arch_specific_logo () {
     # display the Tiny Clear Elf ASCII-art logo, followed by the name
     # in figlet italics
     cat logo
@@ -180,7 +180,7 @@ arch_specific_logo() {
     figlet -f slant "$architecture" | awk '{printf "\x1b[48G%s\n", $0}'
 }
 
-wait_for_next() {
+wait_for_next () {
     # hacky way to require presenter to press enter to continue
     read -r _wait_var # this variable is unused, but needs to be set anyway
 }
