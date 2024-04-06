@@ -119,9 +119,9 @@ fi
 
 if [ "$dep_issues" -gt 0 ]; then
     if [ "$dep_issues" -eq 1 ]; then
-        printf '\e[1mExiting: found a dependency issue.\e[m\n' >&2
+        printf '\033[1mExiting: found a dependency issue.\033[m\n' >&2
     else
-        printf '\e[1mExiting: found %d dependency issues.\e[m\n' "$dep_issues" >&2
+        printf '\033[1mExiting: found %d dependency issues.\033[m\n' "$dep_issues" >&2
     fi
     exit 3
 fi
@@ -141,13 +141,13 @@ show_heading () {
     # display a heading at a specific row in bold green underlined, enclosed in parenthases
     # first argument is the row number
     # second argument is the heading text
-    printf '\e[%dH\e[1;4;32m(%s)\e[m\n' "$1" "$2"
+    printf '\033[%dH\033[1;4;32m(%s)\033[m\n' "$1" "$2"
 }
 
 sh_clear () {
     # why not use one of the 10 different clear commands I'm presenting?
     # I don't want to have to choose which one to use.
-    printf '\e[H\e[J\e[3J'
+    printf '\033[H\033[J\033[3J'
 }
 
 cleanup () {
@@ -177,7 +177,7 @@ arch_specific_logo () {
     # display the Tiny Clear Elf ASCII-art logo, followed by the name
     # in figlet italics
     cat logo
-    printf '\e[H' # go to top row
+    printf '\033[H' # go to top row
     # print the architecture name 48 cells in, so that it doesn't overwrite the logo.
     figlet -f slant "$architecture" | awk '{printf "\x1b[48G%s\n", $0}'
 }
@@ -202,11 +202,11 @@ sh_clear
 cat logo
 
 # the first line is an escape sequence to set the text to bold green
-printf '\e[1;32m
+printf '\033[1;32m
 ╻ ╻ ╺┳╸ ╻
 ┣━┫  ┃  ╹
 ╹ ╹ ╺┻╸ •
-\e[m
+\033[m
 This is my presentation of the Tiny Clear Elf series of executables\n'
 # the 2nd-to-last line is an escape sequence to clear text formatting
 
