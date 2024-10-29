@@ -22,7 +22,7 @@ Breaking it down further, what that does is print 3 ANSI escape sequences:
 
 The executables in this project depend on the terminal supporting those escape sequences, which is not guaranteed to be the case, though all commonly-used terminals I am aware of do support them.
 
-Note that these utilities are hand-written in a hex editor, so source code distribution is not really an applicable concept. If you want to use the Tiny Clear ELF binaries, you can do so under the terms in the LICENSE file. I'd appreciate it if you'd let me know whay you're doing with them, but that's not a requirement, just something I'd appreciate.
+Note that these utilities are hand-written in a hex editor, so source code distribution is not really an applicable concept. If you want to use the Tiny Clear ELF binaries, you can do so under the terms in the LICENSE file. I'd appreciate it if you'd let me know what you're doing with them, but that's not a requirement, just something I'd appreciate.
 
 All of these have been verified to work when run with QEMU. Additionally, I've run most of them (namely amd64, i386, armhf, armel, arm64, and mipsel) on physical hardware successfully.
 
