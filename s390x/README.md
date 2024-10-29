@@ -126,7 +126,7 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
 
 To re-assemble the disassembly, you need to first assemble it with a 64-bit PowerPC little-endian version of the GNU assembler (`gas`, or just `as`), as well as `objcopy`. Both of these are part of GNU binutils. The problem is that it adds its own ELF header and program and section tables, so you then need to extract the actual file out from its output.
 
-I used the versions from Debian Bookworm's `binutils-powerpc64le-linux-gnu` package.
+I used the versions from Debian Bookworm's `binutils-s390x-linux-gnu` package.
 
 On `s390x` systems, one should instead use the `binutils` package, as the `binutils-s390x-linux-gnu` package is meant for working with foreign binaries.
 
