@@ -11,17 +11,17 @@
 00000030: 0000 0000 4000 3800 0100 0000 0000 0000  ....@.8.........
 00000040: 0100 0000 0500 0000 0000 0000 0000 0000  ................
 00000050: 0000 0100 0000 0000 0000 0000 0000 0000  ................
-00000060: 9800 0000 0000 0000 9800 0000 0000 0000  ................
+00000060: 9400 0000 0000 0000 9400 0000 0000 0000  ................
 00000070: 0200 0000 0000 0000 6a01 5889 c7be 8e00  ........j.X.....
-00000080: 0100 6a0a 5a0f 056a 3c58 31ff 0f05 1b5b  ..j.Z..j<X1....[
-00000090: 481b 5b4a 1b5b 334a                      H.[J.[3J
+00000080: 0100 6a06 5a0f 056a 3c58 31ff 0f05 1b63  ..j.Z..j<X1....c
+00000090: 1b5b 334a                                .[3J
 ```
 
 ## Breakdown
 
 The file has 4 parts to it - the ELF header, the Program Header table, the code, and the data.
 
-Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry in the Program Header table is 56 bytes long. The string to print is 10 bytes long.
+Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry in the Program Header table is 56 bytes long. The string to print is 6 bytes long.
 
 ### Disassembly
 
@@ -97,14 +97,14 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     # p_paddr - load this segment from physical address 0 in file
     .8byte 0x0
     # p_filesz - size (in bytes) of the segment in the file
-    .8byte 0x98
+    .8byte 0x94
     # p_memsz - size (in bytes) of memory to load the segment into
-    .8byte 0x98
+    .8byte 0x94
     # p_align - segment alignment - segment addresses must be aligned to multiples of this value
     .8byte 0x2
 
 # The actual code
-  # first syscall: write(1, 0x10097, 10)
+  # first syscall: write(1, 0x10097, 6)
     # On 64-bit x86 systems, write is syscall 1.
     # pushing and popping like this takes 3 bytes, where `mov` takes 5
     pushq $0x1
@@ -115,8 +115,8 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     mov %eax, %edi
     # the memory address with the data to print is 0x1008e.
     movl $0x1008e, %esi
-    # Write 10 bytes of data
-    pushq $0xa
+    # Write 6 bytes of data
+    pushq $0x6
     pop %rdx
     # syscall ask the kernel to perform the syscall specified in RAX, with arguments from RDI, RSI, RDX, and others
     syscall
@@ -131,7 +131,7 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     syscall
 
 # The escape sequences
-  .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
+  .ascii "\x1b""c""\x1b""[3J"
 ```
 
 #### Reassembly
