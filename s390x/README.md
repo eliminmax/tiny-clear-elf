@@ -11,17 +11,17 @@
 00000030: 0000 0000 0040 0038 0001 0000 0000 0000  .....@.8........
 00000040: 0000 0001 0000 0005 0000 0000 0000 0000  ................
 00000050: 0000 0000 0001 0000 0000 0000 0000 0000  ................
-00000060: 0000 0000 0000 0098 0000 0000 0000 0098  ................
+00000060: 0000 0000 0000 0094 0000 0000 0000 0094  ................
 00000070: 0000 0000 0000 0002 a729 0001 c031 0001  .........)...1..
-00000080: 008e a749 000a 0a04 a729 0000 0a01 1b5b  ...I.....).....[
-00000090: 481b 5b4a 1b5b 334a                      H.[J.[3J
+00000080: 008e a749 0006 0a04 a729 0000 0a01 1b63  ...I.....).....c
+00000090: 1b5b 334a                                .[3J
 ```
 
 ## Breakdown
 
 The file has 4 parts to it - the ELF header, the Program Header table, the code, and the data.
 
-Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry in the Program Header table is 56 bytes long. The string to print is 10 bytes long.
+Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry in the Program Header table is 56 bytes long. The string to print is 6 bytes long.
 
 ```asm
 # ELF ehdr
@@ -95,20 +95,20 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     # p_paddr - load this segment from physical address 0 in file
     .8byte 0x0
     # p_filesz - size (in bytes) of the segment in the file
-    .8byte 0x98
+    .8byte 0x94
     # p_memsz - size (in bytes) of memory to load the segment into
-    .8byte 0x98
+    .8byte 0x94
     # p_align - segment alignment - segment addresses must be aligned to multiples of this value
     .8byte 0x2
 
 # The actual code
-  # first syscall: write(1, 0x1008e, 10)
+  # first syscall: write(1, 0x1008e, 6)
     # STDOUT is file descriptor #1
     lghi %r2, 0x1
     # the memory address of the data to write is 0x1008e
     lgfi %r3, 0x1008e
-    # the number of bytes to write is 10
-    lghi %r4, 0xa
+    # the number of bytes to write is 6
+    lghi %r4, 0x6
     # instead of writing the syscall number (NR) to r1 then calling svc 0, one can simply call svc NR if it's less than 255.
     # write is syscall 4
     svc 4
@@ -119,7 +119,7 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     svc 1
 
 # The escape sequences
-  .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
+  .ascii "\33c\33[3J"
 ```
 
 #### Reassembly
