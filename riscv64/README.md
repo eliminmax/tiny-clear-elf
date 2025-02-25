@@ -8,21 +8,20 @@
 00000000: 7f45 4c46 0201 0100 0000 0000 0000 0000  .ELF............
 00000010: 0200 f300 0100 0000 7800 0100 0000 0000  ........x.......
 00000020: 4000 0000 0000 0000 0000 0000 0000 0000  @...............
-00000030: 0000 0000 4000 3800 0100 0000 0000 0000  ....@.8.........
+00000030: 0500 0000 4000 3800 0100 0000 0000 0000  ....@.8.........
 00000040: 0100 0000 0500 0000 0000 0000 0000 0000  ................
 00000050: 0000 0100 0000 0000 0000 0000 0000 0000  ................
-00000060: a600 0000 0000 0000 a600 0000 0000 0000  ................
-00000070: 0200 0000 0000 0000 9308 0004 1305 1000  ................
-00000080: b705 0100 9385 c509 1306 a000 7300 0000  ............s...
-00000090: 9308 d005 1305 0000 7300 0000 1b5b 481b  ........s....[H.
-000000a0: 5b4a 1b5b 334a                           [J.[3J
+00000060: 9a00 0000 0000 0000 9a00 0000 0000 0000  ................
+00000070: 0200 0000 0000 0000 9308 0004 0545 c165  .............E.e
+00000080: 9385 4509 1946 7300 0000 9308 d005 0145  ..E..Fs........E
+00000090: 7300 0000 1b63 1b5b 334a                 s....c.[3J
 ```
 
 ## Breakdown
 
 The file has 4 parts to it - the ELF header, the Program Header table, the code, and the data.
 
-Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry in the Program Header table is 56 bytes long. The string to print is 10 bytes long.
+Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry in the Program Header table is 56 bytes long. The string to print is 6 bytes long.
 
 ### Disassembly
 
@@ -100,14 +99,14 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     # p_paddr - load this segment from physical address 0 in file
     .8byte 0x0
     # p_filesz - size (in bytes) of the segment in the file
-    .8byte 0x9e
+    .8byte 0x9a
     # p_memsz - size (in bytes) of memory to load the segment into
-    .8byte 0x9e
+    .8byte 0x9a
     # p_align - segment alignment - segment addresses must be aligned to multiples of this value
     .8byte 0x2
 
 # The actual code
-  # first syscall: write(1, 0x10094, 10)
+  # first syscall: write(1, 0x10094, 6)
     # On 64-bit riscv systems, write is syscall 64.
     # to set a register to an immediate value, use addi to add that immediate to the register x0
     # which is hard-wired to always contain a zero and save the result to the target regiser.
@@ -123,8 +122,8 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
       # set the lowest 12 bits to 0x94
       addi a1, a1, 0x94
       # thus, the value of a1 is set to 0x10094 - the memory address of the data to print.
-    # Write 10 bytes of data
-    addi a2, x0, 0xa
+    # Write 6 bytes of data
+    addi a2, x0, 0x6
     # riscv's system call instruction is ecall (previously known as scall)
     ecall
   # Second syscall: exit(0)
@@ -136,7 +135,7 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
       ecall
 
 # The escape sequences
-  .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
+  .ascii "\33c\33[3J"
 ```
 
 #### Reassembly
