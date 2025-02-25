@@ -255,16 +255,16 @@ for tiny_clear_elf in */clear; do
     show_heading 26 'DISSASSEMBLY'
     case "$endianness" in
         big)
-            head -c-10 "$tiny_clear_elf" | tail -c+$((ehdr_size+phdr_size+1)) |\
+            head -c-6 "$tiny_clear_elf" | tail -c+$((ehdr_size+phdr_size+1)) |\
                 rasm2 -a"$rasm2_arch" -b"$rasm2_bits" -B -e -d -f - ;;
         little)
-            head -c-10 "$tiny_clear_elf" | tail -c+$((ehdr_size+phdr_size+1)) |\
+            head -c-6 "$tiny_clear_elf" | tail -c+$((ehdr_size+phdr_size+1)) |\
                 rasm2 -a"$rasm2_arch" -b"$rasm2_bits" -B -d -f - ;;
     esac
 
-    show_heading 38 'HEXDUMP OF LAST 10 BYTES'
+    show_heading 38 'HEXDUMP OF LAST 6 BYTES'
 
-    tail -c 10 "$tiny_clear_elf" | hexyl
+    tail -c 6 "$tiny_clear_elf" | hexyl
 
     show_heading 42 'HEXDUMP OF OUTPUT'
 
