@@ -13,11 +13,10 @@ The goal of this project is to create the smallest possible ELF executable that 
 
 ## How it works
 
-The way they work is simple - they print out the following hexadecimal data to stdout: `1b 5b 48 1b 5b 4a 1b 5b 33 4a`.
+The way they work is simple - they print out the following hexadecimal data to stdout: `1b 63 1b 5b 33 4a`.
 
 Breaking it down further, what that does is print 3 ANSI escape sequences:
-1. `␛[H` (`1b 5b 48`) - move the cursor to position 0,0
-2. `␛[J` (`1b 5b 4a`)- clear the screen
+1. `␛c` (`1b 63`) - move the cursor to position 0,0 and clear the scren
 3. `␛[3J` (`1b 5b 33 4a`) - clear the scrollback buffer
 
 The executables in this project depend on the terminal supporting those escape sequences, which is not guaranteed to be the case, though all commonly-used terminals I am aware of do support them.
