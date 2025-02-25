@@ -11,18 +11,17 @@
 00000030: 0000 0000 4000 3800 0100 0000 0000 0000  ....@.8.........
 00000040: 0100 0000 0500 0000 0000 0000 0000 0000  ................
 00000050: 0000 0100 0000 0000 0000 0000 0000 0000  ................
-00000060: a200 0000 0000 0000 a200 0000 0000 0000  ................
+00000060: 9e00 0000 0000 0000 9e00 0000 0000 0000  ................
 00000070: 0200 0000 0000 0000 0808 8052 2000 80d2  ...........R ...
-00000080: c100 0010 4201 80d2 0100 00d4 a80b 8052  ....B..........R
-00000090: 0000 80d2 0100 00d4 1b5b 481b 5b4a 1b5b  .........[H.[J.[
-000000a0: 334a                                     3J
+00000080: c100 0010 c200 80d2 0100 00d4 a80b 8052  ...............R
+00000090: 0000 80d2 0100 00d4 1b63 1b5b 334a       .........c.[3J
 ```
 
 ## Breakdown
 
 The file has 4 parts to it - the ELF header, the Program Header table, the code, and the data.
 
-Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry in the Program Header table is 56 bytes long. The string to print is 10 bytes long.
+Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry in the Program Header table is 56 bytes long. The string to print is 6 bytes long.
 
 ### Disassembly
 
@@ -30,7 +29,7 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
 # ELF ehdr
   # e_ident
     # EI_MAG0, EI_MAG1, EI_MAG2, EI_MAG3: ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3 - the ELF magic number
-    .ascii "\x7f""ELF"
+    .ascii "\177ELF"
     # EI_CLASS: 2 is ELFCLASS64 - meaning it's a 64-bit object
     .byte 0x2
     # EI_DATA: 1 is ELFDATA2LSB - meaning that values are little-endian encoded
@@ -98,14 +97,14 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     # p_paddr - load this segment from physical address 0 in file
     .8byte 0x0
     # p_filesz - size (in bytes) of the segment in the file
-    .8byte 0xa2
+    .8byte 0x9e
     # p_memsz - size (in bytes) of memory to load the segment into
-    .8byte 0xa2
+    .8byte 0x9e
     # p_align - segment alignment - segment addresses must be aligned to multiples of this value
     .8byte 0x2
 
 # The actual code
-  # first syscall: write(1, 0x1009c, 10)
+  # first syscall: write(1, 0x1009c, 6)
     # On 64-bit arm systems, write is syscall 64.
     mov w8, 0x40
     # STDOUT is file descriptor #1
@@ -113,8 +112,8 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     # instead of taking 64 bytes to use a mov to set the lower
     # bytes follwed by a movk to set the upper bytes, set them relative to the program counter
     adr x1, ESCAPE_SEQ
-    # Write 10 bytes of data
-    mov x2, 0xa
+    # Write 6 bytes of data
+    mov x2, 0x6
     # supervisor call 0 is equivalent to amd64's syscall and i386's int 0x80
     svc 0x0
   # Second syscall: exit(0)
@@ -130,7 +129,7 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
 #   I'd prefer to just input an immediate (i.e. adr x1, #0x18, but that's invalid syntax)
 ESCAPE_SEQ:
 # The escape sequences
-  .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
+  .ascii "\33c\33[3J"
 ```
 
 #### Reassembly
