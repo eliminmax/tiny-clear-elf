@@ -11,18 +11,18 @@
 00000030: 0200 0000 4000 3800 0100 0000 0000 0000  ....@.8.........
 00000040: 0100 0000 0500 0000 0000 0000 0000 0000  ................
 00000050: 0000 0100 0000 0000 0000 0000 0000 0000  ................
-00000060: a600 0000 0000 0000 a600 0000 0000 0000  ................
+00000060: a200 0000 0000 0000 a200 0000 0000 0000  ................
 00000070: 0200 0000 0000 0000 0400 0038 0100 6038  ...........8..`8
-00000080: 9c00 8038 0100 843c 0a00 a038 0200 0044  ...8...<...8...D
-00000090: 0100 0038 0000 6038 0200 0044 1b5b 481b  ...8..`8...D.[H.
-000000a0: 5b4a 1b5b 334a                           [J.[3J
+00000080: 9c00 8038 0100 843c 0600 a038 0200 0044  ...8...<...8...D
+00000090: 0100 0038 0000 6038 0200 0044 1b63 1b5b  ...8..`8...D.c.[
+000000a0: 334a                                     3J
 ```
 
 ## Breakdown
 
 The file has 4 parts to it - the ELF header, the Program Header table, the code, and the data.
 
-Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry in the Program Header table is 56 bytes long. The string to print is 10 bytes long.
+Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry in the Program Header table is 56 bytes long. The string to print is 6 bytes long.
 
 ```asm
 # ELF ehdr
@@ -96,14 +96,14 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     # p_paddr - load this segment from physical address 0 in file
     .8byte 0x0
     # p_filesz - size (in bytes) of the segment in the file
-    .8byte 0xa6
+    .8byte 0xa2
     # p_memsz - size (in bytes) of memory to load the segment into
-    .8byte 0xa6
+    .8byte 0xa2
     # p_align - segment alignment - segment addresses must be aligned to multiples of this value
     .8byte 0x2
 
 # The actual code
-  # first syscall: write(1, 0x1008e, 10)
+  # first syscall: write(1, 0x1008e, 6)
     # write is syscall #4
     li %r0, 0x4
     # STDOUT is file descriptor #1
@@ -111,8 +111,8 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     # the memory address of the data to write is 0x1009c
     li %r4, 0x9c
     addis %r4, %r4, 0x1
-    # the number of bytes to write is 10
-    li %r5, 0xa
+    # the number of bytes to write is 6
+    li %r5, 0x6
     # syscall instruction
     sc
   # Second syscall: exit(0)
@@ -125,7 +125,7 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     
 
 # The escape sequences
-  .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
+  .ascii "\33c\33[3J"
 
 ```
 
