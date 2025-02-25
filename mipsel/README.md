@@ -9,18 +9,17 @@
 00000010: 0200 0800 0100 0000 5400 0200 3400 0000  ........T...4...
 00000020: 0000 0000 0010 0070 3400 2000 0100 0000  .......p4. .....
 00000030: 0000 0000 0100 0000 0000 0000 0000 0200  ................
-00000040: 0000 0000 8200 0000 8200 0000 0500 0000  ................
+00000040: 0000 0000 7e00 0000 7e00 0000 0500 0000  ....~...~.......
 00000050: 0200 0000 a40f 0224 0100 0424 0200 053c  .......$...$...<
-00000060: 7800 a534 0a00 0624 0c00 0000 a10f 0224  x..4...$.......$
-00000070: 0000 0424 0c00 0000 1b5b 481b 5b4a 1b5b  ...$.....[H.[J.[
-00000080: 334a                                     3J
+00000060: 7800 a534 0600 0624 0c00 0000 a10f 0224  x..4...$.......$
+00000070: 0000 0424 0c00 0000 1b63 1b5b 334a       ...$.....c.[3J
 ```
 
 ## Breakdown
 
 The file has 4 parts to it - the ELF header, the Program Header table, the code, and the data.
 
-Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry in the Program Header table is 32 bytes long. The string to print is 10 bytes long.
+Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry in the Program Header table is 32 bytes long. The string to print is 6 bytes long.
 
 ### Disassembly
 
@@ -97,16 +96,16 @@ Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry 
     # p_paddr - load this segment from physical address 0 in file
     .4byte 0x0
     # p_filesz - size (in bytes) of the segment in the file
-    .4byte 0x82
+    .4byte 0x7e
     # p_memsz - size (in bytes) of memory to load the segment into
-    .4byte 0x82
+    .4byte 0x7e
     # p_flags - segment permissions - PF_X + PF_R (0x1 + 0x100) - readable and executable
     .4byte 0x5
     # p_align - segment alignment - segment addresses must be aligned to multiples of this value
     .4byte 0x2
 
 # The actual code
-  # first syscall: write(1, 0x20078, 10)
+  # first syscall: write(1, 0x20078, 6)
     # On mips/o32, write is syscall 4004 (0xfa4 in hex)
     # add 0xfa4 to the contents of the $zero register, store the result in $v0
     addiu $v0, $zero, 0xfa4
@@ -119,8 +118,8 @@ Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry 
       lui $a1, 0x2
       # bitwise OR $a1 against 0x78, save the result to $a1, to set the lower bits properly.
       ori $a1, $a1, 0x78
-    # Write 10 bytes of data
-    addiu $a2, $zero, 0xa
+    # Write 6 bytes of data
+    addiu $a2, $zero, 0x6
     # system call time
     syscall
   # Second syscall: exit(0)
@@ -132,7 +131,7 @@ Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry 
     syscall
 
 # The escape sequences
-  .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
+  .ascii "\33c\33[3J"
 ```
 
 #### Reassembly
