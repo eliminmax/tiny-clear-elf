@@ -9,17 +9,17 @@
 00000010: 0200 0300 0100 0000 5400 0200 3400 0000  ........T...4...
 00000020: 0000 0000 0000 0000 3400 2000 0100 0000  ........4. .....
 00000030: 0000 0000 0100 0000 0000 0000 0000 0200  ................
-00000040: 0000 0000 7500 0000 7500 0000 0500 0000  ....u...u.......
+00000040: 0000 0000 7100 0000 7100 0000 0500 0000  ....q...q.......
 00000050: 0200 0000 6a04 586a 015b b96b 0002 006a  ....j.Xj.[.k...j
-00000060: 0a5a cd80 6a01 5831 dbcd 801b 5b48 1b5b  .Z..j.X1....[H.[
-00000070: 4a1b 5b33 4a                             J.[3J
+00000060: 065a cd80 6a01 5831 dbcd 801b 631b 5b33  .Z..j.X1....c.[3
+00000070: 4a                                       J
 ```
 
 ## Breakdown
 
 The file has 4 parts to it - the ELF header, the Program Header table, the code, and the data.
 
-Given that this is a 32-bit ELF file, the ELF header is 32 bytes, and one entry in the Program Header table is 32 bytes long. The string to print is 10 bytes long.
+Given that this is a 32-bit ELF file, the ELF header is 32 bytes, and one entry in the Program Header table is 32 bytes long. The string to print is 6 bytes long.
 
 ### Disassembly
 
@@ -93,16 +93,16 @@ Given that this is a 32-bit ELF file, the ELF header is 32 bytes, and one entry 
     # p_paddr - load this segment from physical address 0 in file
     .4byte 0x0
     # p_filesz - size (in bytes) of the segment in the file
-    .4byte 0x75
+    .4byte 0x71
     # p_memsz - size (in bytes) of memory to load the segment into
-    .4byte 0x75
+    .4byte 0x71
     # p_flags - segment permissions - PF_X + PF_R (0x1 + 0x100) - readable and executable
     .4byte 5
     # p_align - segment alignment - segment addresses must be aligned to multiples of this value
     .4byte 0x2
 
 # The actual code
-  # first syscall: write(1, 0x20073, 10)
+  # first syscall: write(1, 0x20073, 6)
     # On 32-bit x86 systems, write is syscall 4.
     # pushing and popping like this takes 3 bytes, where `mov` takes 5
     pushl $0x4
@@ -112,8 +112,8 @@ Given that this is a 32-bit ELF file, the ELF header is 32 bytes, and one entry 
     pop %ebx
     # the memory address with the data to print is 0x2006b.
     movl $0x2006b, %ecx
-    # Write 10 bytes of data
-    pushl $0xa
+    # Write 6 bytes of data
+    pushl $0x6
     pop %edx
     # interupt 0x80 - the syscall instruction for i386
     int $0x80
@@ -128,7 +128,7 @@ Given that this is a 32-bit ELF file, the ELF header is 32 bytes, and one entry 
     int $0x80
 
 # The escape sequences
-  .ascii "\x1b""[H""\x1b""[J""\x1b""[3J"
+  .ascii "\x1b""c""\x1b""[3J"
 ```
 
 #### Reassembly
