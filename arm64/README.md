@@ -110,7 +110,7 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     # STDOUT is file descriptor #1
     mov x0, 0x1
     # instead of taking 64 bytes to use a mov to set the lower
-    # bytes follwed by a movk to set the upper bytes, set them relative to the program counter
+    # bytes followed by a movk to set the upper bytes, set them relative to the program counter
     adr x1, ESCAPE_SEQ
     # Write 6 bytes of data
     mov x2, 0x6
@@ -124,7 +124,7 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
     # supervisor call 0
     svc 0x0
 
-# I'd normally not use any lables in these, but the ADR encoding used requires a label
+# I'd normally not use any labels in these, but the ADR encoding used requires a label
 #   so that the assembler can calculate the offset the distance from the adr instruction to the label
 #   I'd prefer to just input an immediate (i.e. adr x1, #0x18, but that's invalid syntax)
 ESCAPE_SEQ:

@@ -29,7 +29,7 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
 # ELF ehdr
   # e_ident
     # EI_MAG0, EI_MAG1, EI_MAG2, EI_MAG3: ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3 - the ELF magic number
-    .ascii "\x7f""ELF"
+    .ascii "\177ELF"
     # EI_CLASS: 2 is ELFCLASS64 - meaning it's a 64-bit object
     .byte 0x2
     # EI_DATA: 1 is ELFDATA2LSB - meaning that values are little-endian encoded
@@ -109,7 +109,7 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
   # first syscall: write(1, 0x10094, 6)
     # On 64-bit riscv systems, write is syscall 64.
     # to set a register to an immediate value, use addi to add that immediate to the register x0
-    # which is hard-wired to always contain a zero and save the result to the target regiser.
+    # which is hard-wired to always contain a zero and save the result to the target register.
     addi a7, x0, 0x40
     # STDOUT is file descriptor #1
     addi a0, x0, 0x1

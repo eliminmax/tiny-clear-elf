@@ -28,7 +28,7 @@ Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry 
 # ELF ehdr
   # e_ident
     # EI_MAG0, EI_MAG1, EI_MAG2, EI_MAG3: ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3 - the ELF magic number
-    .ascii "\x7f""ELF"
+    .ascii "\177ELF"
     # EI_CLASS: 1 is ELFCLASS32 - meaning it's a 32-bit object
     .byte 0x1
     # EI_DATA: 1 is ELFDATA2LSB - meaning that values are little-endian encoded
@@ -109,7 +109,7 @@ Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry 
     # STDOUT is file descriptor #1
     mov r0, #0x1
     # instead of taking 12 bytes to use a mov to set the lower
-    # bytes follwed by a movt to set the upper bytes, set them relative to the program counter
+    # bytes followed by a movt to set the upper bytes, set them relative to the program counter
     adr r1, ESCAPE_SEQ
     # this adds the value in the program counter register (the current memory address) to the provided value.
     # There are 8 bytes between this instruction and the the data to print.
@@ -125,9 +125,9 @@ Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry 
     # supervisor call 0
     svc 0x0
 
-# I'd normally not use any lables in these, but the ADR encoding used requires a label
+# I'd normally not use any labels in these, but the ADR encoding used requires a label
 #   so that the assembler can calculate the offset the distance from the adr instruction to the label
-#   I'd prefer to just input an immediate (i.e. adr r1, #0x8, but that's invalid syntax)
+#   I'd prefer to just input an immediate (i.e. adr r1, #0x8) but that's invalid syntax
 ESCAPE_SEQ:
 # The escape sequences
   .ascii "\33c\33[3J"

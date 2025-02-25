@@ -46,7 +46,7 @@ From page A5-192:
 
 The instruction is `0470a0e3`
 
-Because of bit-orderning and endian-ness, the bits of the instruction are processed in the opposite of what I think is the more intuative order for humans.
+Because of bit-orderning and endian-ness, the bits of the instruction are processed in the opposite of what I think is the more intuitive order for humans.
 
 I came up with a rather complex Python 1-liner to print the bits in an order that matches the ARM documentation:
 

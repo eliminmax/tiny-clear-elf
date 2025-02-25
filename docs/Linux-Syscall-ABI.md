@@ -24,7 +24,7 @@ When the architecture-specific call is made, the kernel does the following:
   5. return to user mode
 
 The specific registers used depend on the CPU architecture.
-A pair of tables containing the kernel-mode instrution, register used for each purpose, and any notes about specific exeptions ot the rules for several Linux architectures call all be fount in the `SYSCALL(2)` man page from the Linux man-pages project.
+A pair of tables containing the kernel-mode instrution, register used for each purpose, and any notes about specific exceptions to the rules for several Linux architectures call all be found in the `SYSCALL(2)` man page from the Linux man-pages project.
 
 The set of system calls available on each architecture, and what the syscall number for each of them is, is different on each architecture.
 

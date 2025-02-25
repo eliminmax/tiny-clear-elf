@@ -27,7 +27,7 @@ Given that this is a 32-bit ELF file, the ELF header is 32 bytes, and one entry 
 # ELF ehdr
   # e_ident
     # EI_MAG0, EI_MAG1, EI_MAG2, EI_MAG3: ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3 - the ELF magic number
-    .ascii "\x7f""ELF"
+    .ascii "\177ELF"
     # EI_CLASS: 1 is ELFCLASS32 - meaning it's a 32-bit object
     .byte 0x1
     # EI_DATA: 1 is ELFDATA2LSB - meaning that values are little-endian encoded
@@ -115,7 +115,7 @@ Given that this is a 32-bit ELF file, the ELF header is 32 bytes, and one entry 
     # Write 6 bytes of data
     pushl $0x6
     pop %edx
-    # interupt 0x80 - the syscall instruction for i386
+    # interrupt 0x80 - the syscall instruction for i386
     int $0x80
   # Second syscall: exit(0)
     # on 32-bit x86 systems, exit is syscall 1.
@@ -124,11 +124,11 @@ Given that this is a 32-bit ELF file, the ELF header is 32 bytes, and one entry 
     # set the EBX register to 0 by XOR'ing it to itself
     # error code 0 - no error
     xor %ebx, %ebx
-    # interupt 0x80
+    # interrupt 0x80
     int $0x80
 
 # The escape sequences
-  .ascii "\x1b""c""\x1b""[3J"
+  .ascii "\33c\33[3J"
 ```
 
 #### Reassembly

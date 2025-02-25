@@ -126,7 +126,6 @@ Given that this is a 64-bit ELF file, the ELF header is 64 bytes, and one entry 
 
 # The escape sequences
   .ascii "\33c\33[3J"
-
 ```
 
 #### Reassembly
@@ -151,5 +150,5 @@ as -le -mpower8 -o clear.o clear.S -no-pad-sections
 # -mpower8 instructs it to target the minimum version supported by Debian Bookworm
 
 # extract
-objcopy --only-section .text -O binary clear.o clear
+objcopy -O binary clear.o clear
 ```

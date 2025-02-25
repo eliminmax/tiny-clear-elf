@@ -34,7 +34,7 @@ This document makes extensive reference to [Intel® 64 and IA-32 Architectures S
 
 ### `INC` instruction`
 
-The reason I used `xor edi, edi` is because it is 3 bytes shorter. It occured that there's probably an instruction to increment a register by one, which, depending on length, might shave off another byte or two.
+The reason I used `xor edi, edi` is because it is 3 bytes shorter. It occurred that there's probably an instruction to increment a register by one, which, depending on length, might shave off another byte or two.
 
 Looking into it, I can save one byte with the `xor eax, eax; inc eax` approach for `amd64`. Because the `write` syscall number is different for `i386`, that doesn't work there.
 
@@ -46,7 +46,7 @@ x86_64 uses different addressing modes for backwards compatibility with older x6
 
 If the kernel sets the registers when starting a process, I can `inc`rement `eax` and `edi` for `amd64`, instead of needing to `mov`, or `xor` then `inc`.
 
-From what I've found, the kernel does set things that way, but does not guarentee that it will continue to do so - see [arch/x86/include/asm/elf.h (line 98) in Linux v6.8 source](https://elixir.bootlin.com/linux/v6.8/source/arch/x86/include/asm/elf.h#L98).
+From what I've found, the kernel does set things that way, but does not guarantee that it will continue to do so - see [arch/x86/include/asm/elf.h (line 98) in Linux v6.8 source](https://elixir.bootlin.com/linux/v6.8/source/arch/x86/include/asm/elf.h#L98).
 
 I'm of two minds about this - there's no official policy that it will continue to work that way, but the (in)famous "don't break userspace" rule means that it's not going to change anyway.
 

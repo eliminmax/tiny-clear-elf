@@ -28,7 +28,7 @@ Given that this is a 32-bit ELF file, the ELF header is 52 bytes, and one entry 
 # ELF ehdr
   # e_ident
     # EI_MAG0, EI_MAG1, EI_MAG2, EI_MAG3: ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3 - the ELF magic number
-    .ascii "\x7f""ELF"
+    .ascii "\177ELF"
     # EI_CLASS: 1 is ELFCLASS32 - meaning it's a 32-bit object
     .byte 0x1
     # EI_DATA: 1 is ELFDATA2LSB - meaning that values are little-endian encoded
@@ -159,5 +159,5 @@ as -EL -mabi=32 -march=mips32r2 -o clear.o clear.S -no-pad-sections
 # -mabi=32 instructs it to use the O32 Application Binary Interface
 
 # extract
-objcopy --only-section .text -O binary clear.o clear
+objcopy -O binary clear.o clear
 ```

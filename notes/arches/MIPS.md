@@ -77,7 +77,7 @@ add $t7, $t8, $t9
 |-------|--------|--------|--------|--------|-------|
 |6 bits | 5 bits | 5 bits | 5 bits | 5 bits | 6 bits|
 
-Multiple operations can share a single opcode. When they do, the funct field is used to diffrentiate them. The *Instruction Formats* page linked above uses the following example:
+Multiple operations can share a single opcode. When they do, the funct field is used to differentiate them. The *Instruction Formats* page linked above uses the following example:
 
 > 0x00 refers to an ALU operation and 0x20 refers to ADDing specifically.
 
