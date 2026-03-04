@@ -262,11 +262,11 @@ for tiny_clear_elf in */clear; do
                 rasm2 -a"$rasm2_arch" -b"$rasm2_bits" -B -d -f - ;;
     esac
 
-    show_heading 38 'HEXDUMP OF LAST 10 BYTES'
+    show_heading 42 'HEXDUMP OF LAST 10 BYTES'
 
     tail -c 10 "$tiny_clear_elf" | hexyl
 
-    show_heading 42 'HEXDUMP OF OUTPUT'
+    show_heading 46 'HEXDUMP OF OUTPUT'
 
     run_current | hexyl
 
