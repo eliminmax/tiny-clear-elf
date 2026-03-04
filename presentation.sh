@@ -98,7 +98,7 @@ else
     # generate qemu wrapper functions - Debian has both statically and dynamically linked versions
     # of qemu-user, and the names of the statically linked ones have -static added to the end.
     # define wrapper functions to call the appropriate binary
-    for arch in x86_64 i386 arm aarch64 mipsel mips64el ppc64le s390x riscv64; do
+    for arch in x86_64 i386 arm aarch64 loong64 mipsel mips64el ppc64le s390x riscv64; do
         # `eval` to define function dynamically based on architecture and available commands
         # prioritize dynamically linked
         if command -v "qemu-$arch" >/dev/null 2>&1; then
@@ -216,16 +216,17 @@ for tiny_clear_elf in */clear; do
     # need this info for proper display and disassembly
     architecture="$(dirname "$tiny_clear_elf")"
     case "$architecture" in
-           'amd64') rasm2_arch=x86   endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 qemu_wrapper=x86_64_wrapper;;
-            'i386') rasm2_arch=x86   endianness=little rasm2_bits=32 ehdr_size=52 phdr_size=32 qemu_wrapper=i386_wrapper;;
-           'armhf') rasm2_arch=arm   endianness=little rasm2_bits=16 ehdr_size=52 phdr_size=32 qemu_wrapper=arm_wrapper;;
-           'armel') rasm2_arch=arm   endianness=little rasm2_bits=16 ehdr_size=52 phdr_size=32 qemu_wrapper=arm_wrapper;;
-           'arm64') rasm2_arch=arm   endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 qemu_wrapper=aarch64_wrapper;;
-          'mipsel') rasm2_arch=mips  endianness=little rasm2_bits=32 ehdr_size=52 phdr_size=32 qemu_wrapper=mipsel_wrapper;;
-        'mips64el') rasm2_arch=mips  endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 qemu_wrapper=mips64el_wrapper;;
-         'ppc64el') rasm2_arch=ppc   endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 qemu_wrapper=ppc64le_wrapper;;
-           's390x') rasm2_arch=s390  endianness=big    rasm2_bits=64 ehdr_size=64 phdr_size=56 qemu_wrapper=s390x_wrapper;;
-         'riscv64') rasm2_arch=riscv endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 qemu_wrapper=riscv64_wrapper;;
+           'amd64') rasm2_arch=x86       endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 qemu_wrapper=x86_64_wrapper   ;;
+            'i386') rasm2_arch=x86       endianness=little rasm2_bits=32 ehdr_size=52 phdr_size=32 qemu_wrapper=i386_wrapper     ;;
+           'armhf') rasm2_arch=arm       endianness=little rasm2_bits=16 ehdr_size=52 phdr_size=32 qemu_wrapper=arm_wrapper      ;;
+           'armel') rasm2_arch=arm       endianness=little rasm2_bits=16 ehdr_size=52 phdr_size=32 qemu_wrapper=arm_wrapper      ;;
+           'arm64') rasm2_arch=arm       endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 qemu_wrapper=aarch64_wrapper  ;;
+         'loong64') rasm2_arch=loongarch endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 qemu_wrapper=loong64_wrapper  ;;
+          'mipsel') rasm2_arch=mips      endianness=little rasm2_bits=32 ehdr_size=52 phdr_size=32 qemu_wrapper=mipsel_wrapper   ;;
+        'mips64el') rasm2_arch=mips      endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 qemu_wrapper=mips64el_wrapper ;;
+         'ppc64el') rasm2_arch=ppc       endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 qemu_wrapper=ppc64le_wrapper  ;;
+           's390x') rasm2_arch=s390      endianness=big    rasm2_bits=64 ehdr_size=64 phdr_size=56 qemu_wrapper=s390x_wrapper    ;;
+         'riscv64') rasm2_arch=riscv     endianness=little rasm2_bits=64 ehdr_size=64 phdr_size=56 qemu_wrapper=riscv64_wrapper  ;;
     esac
     # for armhf and armel, it's technically 32-bits, but because
     # it uses thumb instructions, rasm2 needs to be told it's 16.
