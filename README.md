@@ -26,4 +26,4 @@ Note that these utilities are hand-written in a hex editor, so source code distr
 
 All of these have been verified to work when run with QEMU. Additionally, I've run a slight majority of them (namely amd64, i386, armhf, armel, arm64, and mipsel) on physical hardware successfully.
 
-A demo/display/infosheet/presentation… thing of sorts is available on [asciinema](https://asciinema.org/a/558392), generated using the `presentation.sh` script in the source repository.
+A demo/display/infosheet/presentation… thing of sorts is available on [asciinema](https://asciinema.org/a/812656), generated using the `presentation.sh` script in the source repository.
