@@ -71,10 +71,7 @@ dep_check figlet deb figlet
 dep_check tput deb ncurses-bin
 dep_check rasm2 git 'https://github.com/radareorg/radare2'
 
-# "${FORCE_USE_QEMU+x}" resolves to 'x' if FORCE_USE_QEMU is defined
-# -z tests if the following string is empty
-# if FORCE_USE_QEMU is defined, even if it's empty, this won't run, as even an empty var becomes 'x'
-if [ -z "${FORCE_USE_QEMU+x}" ]; then
+if [ -z "${TCE_PRESENTATION_USE_QEMU+x}" ]; then
     # make sure binfmt_misc support is enabled - this enables running foreign binaries
     if [ ! -e /proc/sys/fs/binfmt_misc ]; then
         printf 'error: binfmt support is missing.\n' >&2
@@ -95,9 +92,7 @@ if [ -z "${FORCE_USE_QEMU+x}" ]; then
         done
     fi
 else
-    # generate qemu wrapper functions - Debian has both statically and dynamically linked versions
-    # of qemu-user, and the names of the statically linked ones have -static added to the end.
-    # define wrapper functions to call the appropriate binary
+    # define wrapper functions to call the appropriate QEMU binary if possible
     for arch in x86_64 i386 arm aarch64 loong64 mipsel mips64el ppc64le s390x riscv64; do
         # `eval` to define function dynamically based on architecture and available commands
         # prioritize dynamically linked
@@ -105,11 +100,6 @@ else
             # if qemu-s390x exists, this will evaluate as 's390x_wrapper () { qemu-s390x "$@"; }'
             # which is a function that just passes its arguments straight to the qemu-s390x command
             eval "${arch}_wrapper() { qemu-$arch \"\$@\"; }"
-        elif command -v "qemu-$arch-static" >/dev/null 2>&1; then
-            # if qemu-s390x doesn't exist, but qemu-s390x-static does, this will evaluate as
-            # 's390x_wrapper () { qemu-s390x-static "$@"; }'
-            # which is a function that just passes its arguments straight to the qemu-s390x-static command
-            eval "${arch}_wrapper() { qemu-$arch-static \"\$@\"; }"
         else
             printf 'Neither qemu-%s nor qemu-%s-static found.\n' "$arch" "$arch" >&2
             dep_issues=$((dep_issues+1))
